@@ -298,7 +298,7 @@ class RegistrationPage extends React.Component {
               placeholder="Answer"
               fullWidth
               multiline
-              rowsMax="3"
+              maxRows="3"
               required
             />
           ) : null}

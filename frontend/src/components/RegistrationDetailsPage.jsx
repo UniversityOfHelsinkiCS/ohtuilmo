@@ -169,7 +169,7 @@ const RegistrationAnswers = ({ questions }) => {
                   <MenuItem value={5}>5</MenuItem>
                 </Select>
               ) : (
-                <Input value={question.answer} fullWidth multiline rowsMax="3" disabled />
+                <Input value={question.answer} fullWidth multiline maxRows="3" disabled />
               )}
             </CardContent>
           </Card>
