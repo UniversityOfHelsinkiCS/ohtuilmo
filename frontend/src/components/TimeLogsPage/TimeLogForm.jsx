@@ -71,9 +71,7 @@ export const TimeLogForm = ({ handleSubmit, disabled, availableTags }) => {
           aria-describedby="date"
           value={date}
           onChange={handleDateChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
         <TextField
@@ -86,9 +84,7 @@ export const TimeLogForm = ({ handleSubmit, disabled, availableTags }) => {
           aria-describedby="time"
           value={time}
           onChange={handleTimeChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
         <TextField
@@ -101,9 +97,7 @@ export const TimeLogForm = ({ handleSubmit, disabled, availableTags }) => {
           multiline
           value={description}
           onChange={handleDescriptionChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
         <TagSelect

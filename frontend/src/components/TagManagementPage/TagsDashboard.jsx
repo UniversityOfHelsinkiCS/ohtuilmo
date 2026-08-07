@@ -84,9 +84,7 @@ const TagsPage = (props) => {
           type="text"
           value={tagTitle}
           onChange={(e) => setTagTitle(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
       </div>

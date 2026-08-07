@@ -103,9 +103,7 @@ const QuestionSetForm = ({ initialName, initialQuestionsJson, onSubmit, controls
           }
         ]
       `}
-        InputLabelProps={{
-          shrink: true,
-        }}
+        slotProps={{ inputLabel: { shrink: true } }}
       />
       {controls}
     </form>

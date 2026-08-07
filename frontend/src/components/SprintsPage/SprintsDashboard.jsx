@@ -83,9 +83,7 @@ const SprintsPage = (props) => {
           type="number"
           value={sprintNumber}
           onChange={(e) => setSprintNumber(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
         <TextField
@@ -96,9 +94,7 @@ const SprintsPage = (props) => {
           aria-describedby="startDate"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
         <TextField
@@ -109,9 +105,7 @@ const SprintsPage = (props) => {
           aria-describedby="endDate"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
       </div>

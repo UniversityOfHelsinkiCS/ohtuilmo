@@ -108,9 +108,7 @@ export const SprintListItem = (props) => {
             aria-describedby="date"
             value={newStartDate}
             onChange={(e) => setNewStartDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
+            slotProps={{ inputLabel: { shrink: true } }}
             variant="outlined"
           />
         )}
@@ -129,9 +127,7 @@ export const SprintListItem = (props) => {
             aria-describedby="date"
             value={newEndDate}
             onChange={(e) => setNewEndDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
+            slotProps={{ inputLabel: { shrink: true } }}
             variant="outlined"
           />
         )}
