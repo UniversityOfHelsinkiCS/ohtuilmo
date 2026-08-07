@@ -21,8 +21,10 @@ const AdminSprintsPage = (props) => {
   const [allConfigurations, setAllConfigurations] = useState([])
   const [allGroups, setAllGroups] = useState([])
   const [allSprints, setAllSprints] = useState([])
-  const [selectedConfiguration, setSelectedConfiguration] = useState({})
-  const [selectedGroup, setSelectedGroup] = useState({})
+  const [selectedConfigurationId, setSelectedConfigurationId] = useState('')
+  const [selectedGroupId, setSelectedGroupId] = useState('')
+
+  const selectedGroupObj = allGroups.find((g) => g.id === selectedGroupId)
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -66,13 +68,13 @@ const AdminSprintsPage = (props) => {
         notificationActions.setError(error.response.data.error)
       }
     }
-    const fetchData = async (selectedGroupId) => {
+    const fetchData = async (id) => {
       setIsLoading(true)
-      await fetchSprints(selectedGroupId)
+      await fetchSprints(id)
       setIsLoading(false)
     }
-    if (selectedGroup?.id) fetchData(selectedGroup.id)
-  }, [selectedGroup, selectedConfiguration])
+    if (selectedGroupId) fetchData(selectedGroupId)
+  }, [selectedGroupId, selectedConfigurationId])
 
   if (isLoading) return <LoadingSpinner />
 
@@ -81,14 +83,14 @@ const AdminSprintsPage = (props) => {
       <SprintsSelectForm
         configurations={allConfigurations}
         groups={allGroups}
-        selectedConfiguration={selectedConfiguration}
-        selectedGroup={selectedGroup}
-        handleConfigurationChange={setSelectedConfiguration}
-        handleGroupChange={setSelectedGroup}
+        selectedConfigurationId={selectedConfigurationId}
+        selectedGroupId={selectedGroupId}
+        handleConfigurationChange={setSelectedConfigurationId}
+        handleGroupChange={setSelectedGroupId}
       />
-      {selectedGroup && (
+      {selectedGroupId !== '' && selectedGroupObj && (
         <div>
-          <Typography variant="h5">Sprints by {selectedGroup.name}</Typography>
+          <Typography variant="h5">Sprints by {selectedGroupObj.name}</Typography>
           {allSprints.length > 0 && (
             <div className="sprint-list-container">
               <Table>

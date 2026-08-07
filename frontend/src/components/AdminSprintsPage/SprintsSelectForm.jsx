@@ -5,10 +5,10 @@ import Select from '@mui/material/Select'
 
 export const SprintsSelectForm = ({
   configurations,
-  selectedConfiguration,
+  selectedConfigurationId,
   handleConfigurationChange,
   groups,
-  selectedGroup,
+  selectedGroupId,
   handleGroupChange,
 }) => {
   const SelectorWrapper = ({ label, children }) => (
@@ -20,17 +20,17 @@ export const SprintsSelectForm = ({
 
   const ConfigurationSelect = ({
     configurations,
-    selectedConfiguration,
+    selectedConfigurationId,
     handleConfigurationChange,
     handleGroupChange,
   }) => {
     return (
       <Select
         data-cy="configuration-selector"
-        value={selectedConfiguration}
+        value={selectedConfigurationId}
         onChange={(e) => {
           handleConfigurationChange(e.target.value)
-          handleGroupChange({})
+          handleGroupChange('')
         }}
         MenuProps={{ style: { zIndex: 1600 } }}
       >
@@ -38,7 +38,7 @@ export const SprintsSelectForm = ({
           <MenuItem
             key={configuration.id}
             className="configuration-menu-item"
-            value={configuration}
+            value={configuration.id}
           >
             {configuration.name}
           </MenuItem>
@@ -47,24 +47,24 @@ export const SprintsSelectForm = ({
     )
   }
 
-  const GroupIsInConfiguration = (group, configuration) => {
-    return group.configurationId === configuration.id
+  const GroupIsInConfiguration = (group, configurationId) => {
+    return group.configurationId === configurationId
   }
 
-  const GroupSelect = ({ groups, selectedGroup, handleGroupChange }) => {
+  const GroupSelect = ({ groups, selectedGroupId, handleGroupChange }) => {
     return (
       <Select
         data-cy="group-selector"
-        value={selectedGroup}
+        value={selectedGroupId}
         onChange={(e) => {
           handleGroupChange(e.target.value)
         }}
         MenuProps={{ style: { zIndex: 1600 } }}
       >
         {groups
-          .filter((group) => GroupIsInConfiguration(group, selectedConfiguration))
+          .filter((group) => GroupIsInConfiguration(group, selectedConfigurationId))
           .map((group) => (
-            <MenuItem key={group.id} className="group-menu-item" value={group}>
+            <MenuItem key={group.id} className="group-menu-item" value={group.id}>
               {group.name}
             </MenuItem>
           ))}
@@ -78,15 +78,15 @@ export const SprintsSelectForm = ({
         <SelectorWrapper label="Select configuration">
           <ConfigurationSelect
             configurations={configurations}
-            selectedConfiguration={selectedConfiguration}
+            selectedConfigurationId={selectedConfigurationId}
             handleConfigurationChange={handleConfigurationChange}
             handleGroupChange={handleGroupChange}
           />
         </SelectorWrapper>
-        {Object.keys(selectedConfiguration).length !== 0 && (
+        {selectedConfigurationId !== '' && (
           <SelectorWrapper label="Select group">
             <GroupSelect
-              selectedGroup={selectedGroup}
+              selectedGroupId={selectedGroupId}
               handleGroupChange={handleGroupChange}
               groups={groups}
             />
