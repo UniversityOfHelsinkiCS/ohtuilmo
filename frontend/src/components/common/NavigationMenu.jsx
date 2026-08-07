@@ -94,20 +94,18 @@ class NavigationMenu extends React.Component {
               >
                 <Paper>
                   <ClickAwayListener onClickAway={this.handleClose}>
-                    <>
+                    <MenuList>
                       {menuItemsArray.map((group, index) =>
                         group.title ? (
                           <React.Fragment key={`group-${index}`}>
-                            <MenuList>
-                              <MenuItem disabled>{group.title}</MenuItem>
-                              {renderMenuItems(group.items)}
-                            </MenuList>
+                            <MenuItem disabled>{group.title}</MenuItem>
+                            {renderMenuItems(group.items)}
                           </React.Fragment>
                         ) : (
                           renderMenuItems(group)
                         ),
                       )}
-                    </>
+                    </MenuList>
                   </ClickAwayListener>
                 </Paper>
               </Grow>
