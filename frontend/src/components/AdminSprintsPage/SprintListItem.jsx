@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Button from '@mui/material/Button'
 import { TableRow, TableCell } from '@mui/material'
-import TextField from '@mui/material/TextField'
+import { CustomDatePicker } from '../common/CustomDatePicker'
 
 import sprintService from '../../services/sprints'
 
@@ -98,18 +98,14 @@ export const SprintListItem = (props) => {
         {!isEditing ? (
           formatDate(startDate)
         ) : (
-          <TextField
-            errors={(!!startDateErrorMessage).toString()}
-            helperText={startDateErrorMessage}
-            className="date"
-            id="date"
-            type="date"
+          <CustomDatePicker
             label="Date"
-            aria-describedby="date"
             value={newStartDate}
-            onChange={(e) => setNewStartDate(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            variant="outlined"
+            onChange={(newValue) => setNewStartDate(newValue)}
+            id="date"
+            className="date"
+            error={!!startDateErrorMessage}
+            helperText={startDateErrorMessage}
           />
         )}
       </TableCell>
@@ -117,18 +113,14 @@ export const SprintListItem = (props) => {
         {!isEditing ? (
           formatDate(endDate)
         ) : (
-          <TextField
-            errors={(!!endDateErrorMessage).toString()}
-            helperText={endDateErrorMessage}
-            className="date"
-            id="date"
-            type="date"
+          <CustomDatePicker
             label="Date"
-            aria-describedby="date"
             value={newEndDate}
-            onChange={(e) => setNewEndDate(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            variant="outlined"
+            onChange={(newValue) => setNewEndDate(newValue)}
+            id="date"
+            className="date"
+            error={!!endDateErrorMessage}
+            helperText={endDateErrorMessage}
           />
         )}
       </TableCell>

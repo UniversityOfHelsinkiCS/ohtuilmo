@@ -2,6 +2,7 @@ import { withRouter } from '../../utils/withRouter'
 import React, { useState, useEffect } from 'react'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
+import { CustomDatePicker } from '../common/CustomDatePicker'
 import Button from '@mui/material/Button'
 import { Table, TableRow, TableHead, TableBody, TableCell } from '@mui/material'
 import sprintService from '../../services/sprints'
@@ -86,27 +87,19 @@ const SprintsPage = (props) => {
           slotProps={{ inputLabel: { shrink: true } }}
           variant="outlined"
         />
-        <TextField
-          className="date"
-          id="startDate"
-          type="date"
+        <CustomDatePicker
           label="Start Date"
-          aria-describedby="startDate"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          variant="outlined"
-        />
-        <TextField
+          onChange={(newValue) => setStartDate(newValue)}
+          id="startDate"
           className="date"
-          id="endDate"
-          type="date"
+        />
+        <CustomDatePicker
           label="End Date"
-          aria-describedby="endDate"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          variant="outlined"
+          onChange={(newValue) => setEndDate(newValue)}
+          id="endDate"
+          className="date"
         />
       </div>
       <Button

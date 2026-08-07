@@ -9,6 +9,9 @@ import { amber } from '@mui/material/colors'
 import { ThemeProvider as LegacyThemeProvider } from '@mui/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ColorModeContext } from './context/ColorModeContext'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import 'dayjs/locale/fi'
 
 const getInitialMode = () => {
   const stored = localStorage.getItem('theme')
@@ -101,8 +104,10 @@ const Root = () => {
       <ColorModeContext.Provider value={{ mode: themeMode, setMode: setThemeMode }}>
         <ThemeProvider theme={theme}>
           <LegacyThemeProvider theme={theme}>
-            <CssBaseline />
-            <App />
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fi">
+              <CssBaseline />
+              <App />
+            </LocalizationProvider>
           </LegacyThemeProvider>
         </ThemeProvider>
       </ColorModeContext.Provider>

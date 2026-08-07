@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { TextField, Button } from '@mui/material'
+import { CustomDatePicker } from '../common/CustomDatePicker'
 import TagSelect from './TagSelect'
 
 import './TimeLogsPage.css'
@@ -12,8 +13,8 @@ export const TimeLogForm = ({ handleSubmit, disabled, availableTags }) => {
   const [descriptionErrorMessage, setDescriptionErrorMessage] = useState('')
   const [tags, setTags] = useState([])
 
-  const handleDateChange = (event) => {
-    setDate(event.target.value)
+  const handleDateChange = (newValue) => {
+    setDate(newValue)
   }
 
   const handleTimeChange = (event) => {
@@ -62,17 +63,13 @@ export const TimeLogForm = ({ handleSubmit, disabled, availableTags }) => {
   return (
     <form onSubmit={handleFormSubmit} className="timelogs-form">
       <div className="input-container">
-        <TextField
+        <CustomDatePicker
           disabled={disabled}
-          className="date"
-          id="date"
-          type="date"
           label="Date"
-          aria-describedby="date"
           value={date}
           onChange={handleDateChange}
-          slotProps={{ inputLabel: { shrink: true } }}
-          variant="outlined"
+          id="date"
+          className="date"
         />
         <TextField
           disabled={disabled}
