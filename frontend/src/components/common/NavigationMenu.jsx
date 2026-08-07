@@ -67,7 +67,7 @@ class NavigationMenu extends React.Component {
           <IconButton
             id="hamburger-menu-button"
             className="nav-menu-button"
-            buttonRef={(node) => {
+            ref={(node) => {
               this.anchorEl = node
             }}
             aria-owns={open ? 'menu-list-grow' : undefined}
