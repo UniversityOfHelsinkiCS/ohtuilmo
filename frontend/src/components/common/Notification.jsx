@@ -35,10 +35,6 @@ const Notification = ({ type, message, open, duration, onNotificationClose }) =>
         <SnackbarContent
           style={style}
           message={<span data-testid="notification-message">{message}</span>}
-          headlineMapping={{
-            body1: 'div',
-            body2: 'div',
-          }}
         />
       </Snackbar>
     </div>

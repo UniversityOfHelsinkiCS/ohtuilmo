@@ -364,7 +364,6 @@ const ConfigurationSelect = ({
           vertical: 'bottom',
           horizontal: 'left',
         },
-        getContentAnchorEl: null,
       }}
       data-cy="configuration-selector"
       value={currentConfiguration}
@@ -401,7 +400,6 @@ const GroupSelect = ({ currentGroupID, setCurrentGroupID, allGroupsInConfig }) =
           vertical: 'bottom',
           horizontal: 'left',
         },
-        getContentAnchorEl: null,
       }}
       data-cy="group-selector"
       value={currentGroupID}
