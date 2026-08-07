@@ -60,10 +60,13 @@ const QuestionSetForm = ({ initialName, initialQuestionsJson, onSubmit, controls
       <TextField
         className="question-set-form__questions"
         error={!!questionsError}
-        inputProps={{
-          style: {
-            fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
-            fontSize: '0.9em',
+        slotProps={{
+          inputLabel: { shrink: true },
+          htmlInput: {
+            style: {
+              fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
+              fontSize: '0.9em',
+            },
           },
         }}
         fullWidth
@@ -103,7 +106,6 @@ const QuestionSetForm = ({ initialName, initialQuestionsJson, onSubmit, controls
           }
         ]
       `}
-        slotProps={{ inputLabel: { shrink: true } }}
       />
       {controls}
     </form>
