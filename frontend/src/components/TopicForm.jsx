@@ -7,6 +7,8 @@ import Button from '@mui/material/Button'
 import { useTheme } from '@mui/material'
 import './TopicForm.css'
 
+const isHelsinkiEmail = (email) => email && email.endsWith('@helsinki.fi')
+
 const TopicForm = (props) => {
   const [agreement, setAgreement] = useState(false)
   const timing = props.content.summerDates
@@ -84,16 +86,27 @@ const TopicForm = (props) => {
             margin="normal"
             value={props.content.email}
             onChange={(e) => props.updateEmail(e.target.value)}
+            helperText={
+              isHelsinkiEmail(props.content.email)
+                ? '@helsinki.fi email address will be used for UniSign, therefore a phone number is not mandatory. / @helsinki.fi sähköpostiosoitetta käytetään UniSignia varten, joten puhelinnumero ei ole pakollinen.'
+                : ''
+            }
           />
         </div>
         <div>
           <TextField
             type="tel"
             fullWidth
+            required={!isHelsinkiEmail(props.content.email)}
             label="Phone number (Hidden from students) / Puhelinnumero (piilotettu opiskelijoilta)"
             margin="normal"
             value={props.content.phoneNumber}
             onChange={(e) => props.updatePhoneNumber(e.target.value)}
+            helperText={
+              !isHelsinkiEmail(props.content.email)
+                ? "A valid phone number is required for UniSign if you don't have an @helsinki.fi email address. / Toimiva puhelinnumero vaaditaan UniSignia varten, jos sinulla ei ole @helsinki.fi sähköpostiosoitetta."
+                : ''
+            }
           />
         </div>
         <div style={{ marginTop: 35 }}>
