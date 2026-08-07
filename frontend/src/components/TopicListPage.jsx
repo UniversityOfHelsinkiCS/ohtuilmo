@@ -311,7 +311,7 @@ const TopicTableRow = ({ topic, onEmailSendRequested, onActiveToggle }) => {
           onSendRequested={onEmailSendRequested}
         />
       </TableCell>
-      <TableCell padding="checkbox" numeric>
+      <TableCell padding="checkbox" align="right">
         <Switch data-cy="toggle-active" checked={topic.active} onClick={onActiveToggle} />
       </TableCell>
     </TableRow>
@@ -330,7 +330,7 @@ const TopicTableHead = () => (
       <TableCell padding="dense">Topic</TableCell>
       <TableCell padding="none">Customer review</TableCell>
       <TableCell padding="none">Send accept/reject email</TableCell>
-      <TableCell numeric>Active</TableCell>
+      <TableCell align="right">Active</TableCell>
     </TableRow>
   </TableHead>
 )
