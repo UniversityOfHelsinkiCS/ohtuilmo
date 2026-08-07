@@ -39,6 +39,9 @@ export const StudentSelectionForm = ({
         }}
         MenuProps={{ style: { zIndex: 1600 } }}
       >
+        <MenuItem key={0} className="configuration-menu-item" value={0} disabled>
+          Pick a configuration
+        </MenuItem>
         {configurations.map((configuration) => (
           <MenuItem
             key={configuration.id}
@@ -67,7 +70,7 @@ export const StudentSelectionForm = ({
         }}
         MenuProps={{ style: { zIndex: 1600 } }}
       >
-        <MenuItem key="0" className="group-menu-item" value="0" disabled>
+        <MenuItem key={0} className="group-menu-item" value={0} disabled>
           Pick a group
         </MenuItem>
         {groups
