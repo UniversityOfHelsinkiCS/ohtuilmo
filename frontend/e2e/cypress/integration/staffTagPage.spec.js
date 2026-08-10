@@ -15,6 +15,8 @@ const formatDate = (date) => date.toISOString().slice(0, 10)
 describe('Staff tag page', () => {
   before(() => {
     cy.deleteAllGroups()
+    cy.loginAsRegisteredUser()
+    cy.loginAsRegisteredIndicatedUser()
     cy.loginAsAdmin()
     cy.visit('/')
     cy.createTag('Coding')
@@ -114,16 +116,13 @@ describe('Staff tag page', () => {
   })
 
   it('displays correct tag data for group', () => {
-    cy.get('[data-cy="configuration-selector"]')
-      .click()
-      .then(() => {
-        cy.contains('Konfiguraatio 1').click()
-      })
-    cy.get('[data-cy="group-selector"]')
-      .click()
-      .then(() => {
-        cy.contains('Brand New Group').click()
-      })
+    cy.get('[data-cy="configuration-selector"]').should('be.visible').click()
+    cy.wait(500)
+    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
+
+    cy.get('[data-cy="group-selector"]').should('be.visible').click()
+    cy.wait(500)
+    cy.get('.group-menu-item').contains('Brand New Group').click()
     cy.contains('Tag usage for Brand New Group').should('exist')
     cy.get('#bar-Coding').trigger('mouseover')
     cy.get('.recharts-tooltip-wrapper').should('be.visible').and('contain.text', '6 h')
@@ -151,21 +150,17 @@ describe('Staff tag page', () => {
   })
 
   it('displays correct tag data for individual student', () => {
-    cy.get('[data-cy="configuration-selector"]')
-      .click()
-      .then(() => {
-        cy.contains('Konfiguraatio 1').click()
-      })
-    cy.get('[data-cy="group-selector"]')
-      .click()
-      .then(() => {
-        cy.contains('Brand New Group').click()
-      })
-    cy.get('[data-cy="student-selector"]')
-      .click()
-      .then(() => {
-        cy.contains('Volodymyr').click()
-      })
+    cy.get('[data-cy="configuration-selector"]').should('be.visible').click()
+    cy.wait(500)
+    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
+
+    cy.get('[data-cy="group-selector"]').should('be.visible').click()
+    cy.wait(500)
+    cy.get('.group-menu-item').contains('Brand New Group').click()
+
+    cy.get('[data-cy="student-selector"]').should('be.visible').click()
+    cy.wait(500)
+    cy.get('.student-menu-item').contains('Volodymyr').click()
     cy.contains('Tag usage for Volodymyr').should('exist')
     cy.get('#bar-Coding').trigger('mouseover')
     cy.get('.recharts-tooltip-wrapper').should('be.visible').and('contain.text', '4 h')

@@ -140,6 +140,9 @@ describe('Topic list page', () => {
         .eq(2)
         .invoke('attr', 'data-cy-topic-name')
         .should('eq', 'Ohjelmistotuotantoprojektin laajennus')
+
+      // Restore Aihe C to its original Active state to prevent test pollution in subsequent runs!
+      findTopicActiveCheckbox('Aihe C').click()
     })
   })
 
