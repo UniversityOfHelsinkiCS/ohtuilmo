@@ -1,4 +1,4 @@
-import { DatePicker } from '@mui/x-date-pickers'
+import { DesktopDatePicker } from '@mui/x-date-pickers'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 
@@ -13,7 +13,7 @@ export const CustomDatePicker = ({
   disabled,
 }) => {
   return (
-    <DatePicker
+    <DesktopDatePicker
       disabled={disabled}
       label={label}
       value={value ? dayjs(value) : null}
