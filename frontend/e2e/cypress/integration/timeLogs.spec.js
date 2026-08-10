@@ -11,8 +11,6 @@ const addDaysToDate = (date, days) => {
   return newDate
 }
 
-const formatDate = (date) => date.toISOString().slice(0, 10)
-
 describe('Time logs & sprints', () => {
   before(() => {
     cy.deleteAllGroups()
@@ -48,14 +46,14 @@ describe('Time logs & sprints', () => {
     const dateYesterday = addDaysToDate(dateToday, -1)
 
     cy.get('#sprintNumber').type('1')
-    cy.get('#startDate').type(formatDate(addWeeksToDate(dateYesterday, -1)))
-    cy.get('#endDate').type(formatDate(dateYesterday))
+    cy.get('#startDate').selectDate(addWeeksToDate(dateYesterday, -1))
+    cy.get('#endDate').selectDate(dateYesterday)
     cy.get('#add-sprint-button').click()
     cy.get('[data-cy=sprint-1]').should('exist')
 
     cy.get('#sprintNumber').type('2')
-    cy.get('#startDate').type(formatDate(dateToday))
-    cy.get('#endDate').type(formatDate(addWeeksToDate(dateToday, 1)))
+    cy.get('#startDate').selectDate(dateToday)
+    cy.get('#endDate').selectDate(addWeeksToDate(dateToday, 1))
     cy.get('#add-sprint-button').click()
 
     cy.get('[data-cy=sprint-2]').should('exist')
@@ -97,14 +95,14 @@ describe('Time logs & sprints', () => {
 
     cy.get('h4', { timeout: 15000 }).should('include.text', 'Time Logs')
 
-    cy.get('#date').type(formatDate(new Date()))
+    cy.get('#date').selectDate(new Date())
     cy.get('#time').type('01:00')
     cy.get('#description').type('test description 1')
     cy.get('#time-log-submit-button').click()
 
     cy.get('.notification').should('exist').should('have.text', 'Time log created successfully')
 
-    cy.get('#date').type(formatDate(addDaysToDate(new Date(), 1)))
+    cy.get('#date').selectDate(addDaysToDate(new Date(), 1))
     cy.get('#time').type('02:00')
     cy.get('#description').type('test description 2')
     cy.get('#time-log-submit-button').click()
@@ -136,7 +134,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-02-01')
+    cy.get('.date input').selectDate('2022-02-01')
     cy.get('.time').type('01:00')
     cy.get('.description').type('valid description')
     cy.get('.submit-button').click()
@@ -212,7 +210,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-01-01')
+    cy.get('.date input').selectDate('2022-01-01')
     cy.get('.time').type('-01:00')
     cy.get('.description').type('negative time')
     cy.get('.submit-button').click()
@@ -227,7 +225,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-01-01')
+    cy.get('.date input').selectDate('2022-01-01')
     cy.get('.time').type('aabee')
     cy.get('.description').type('letters in time')
     cy.get('.submit-button').click()
@@ -242,7 +240,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-01-01')
+    cy.get('.date input').selectDate('2022-01-01')
     cy.get('.time').type('0100')
     cy.get('.description').type('missing colon')
     cy.get('.submit-button').click()
@@ -257,7 +255,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-01-01')
+    cy.get('.date input').selectDate('2022-01-01')
     cy.get('.time').type('01:61')
     cy.get('.description').type('over 60 minutes')
     cy.get('.submit-button').click()
@@ -272,7 +270,7 @@ describe('Time logs & sprints', () => {
 
     cy.get('.timelogs-container-1').should('exist')
     cy.get('.input-container').should('exist')
-    cy.get('.date').type('2022-01-01')
+    cy.get('.date input').selectDate('2022-01-01')
     cy.get('.time').type('01:00')
     cy.get('.description').type('1234')
     cy.get('.submit-button').click()
