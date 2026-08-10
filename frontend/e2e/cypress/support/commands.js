@@ -61,6 +61,9 @@ Cypress.Commands.add('selectDate', { prevSubject: true }, (subject, dateObj) => 
             .filter((index, el) => Cypress.$(el).text().trim() === targetDay)
             .first()
             .click({ force: true })
+
+          // Wait for the MUI DatePicker
+          cy.get('div[role="dialog"]').should('not.exist')
         } else {
           const currentMonthIndex = fiMonths.findIndex((m) => label.includes(m))
 
