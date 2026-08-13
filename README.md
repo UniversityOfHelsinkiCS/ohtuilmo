@@ -83,15 +83,6 @@ Development setup includes database management tool called Adminer. With Adminer
 
 After a successful staging build, the new version should appear on the staging-server in 15mins.
 
-### Users
-
-| user     | pwd      |
-| -------- | -------- |
-| oppilas1 | oppilas1 |
-| oppilas2 | oppilas2 |
-| assari   | assari   |
-| opettaja | opettaja |
-
 ### Project links (legacy)
 
 - [Definition of Done](/documentation/definition_of_done.md)
