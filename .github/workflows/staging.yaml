@@ -16,7 +16,7 @@ jobs:
         id: build-backend
         uses: redhat-actions/buildah-build@v2
         with:
-          image: backend
+          image: ohtuilmo-backend
           tags: staging ${{ github.sha }}
           context: backend/
           containerfiles: |
@@ -27,27 +27,27 @@ jobs:
         id: build-frontend
         uses: redhat-actions/buildah-build@v2
         with:
-          image: frontend
+          image: ohtuilmo-frontend
           tags: staging ${{ github.sha }}
           context: frontend/
           containerfiles: |
             frontend/Dockerfile
           build-args: NODE_ENV="staging"
 
-      - name: Push backend to quay.io
+      - name: Push backend to registry.version.helsinki.fi
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-backend.outputs.image }}
           tags: ${{ steps.build-backend.outputs.tags }}
-          registry: quay.io/ohtuilmo
-          username: ohtuilmo+github
-          password: ${{ secrets.QUAY_PASSWORD }}
+          registry: registry.version.helsinki.fi/toska/openshift/kontit/
+          username: kontit
+          password: ${{ secrets.VERSION_PUSH_SECRET }}
 
-      - name: Push frontend to quay.io
+      - name: Push frontend to registry.version.helsinki.fi
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-frontend.outputs.image }}
           tags: ${{ steps.build-frontend.outputs.tags }}
-          registry: quay.io/ohtuilmo
-          username: ohtuilmo+github
-          password: ${{ secrets.QUAY_PASSWORD }}
+          registry: registry.version.helsinki.fi/toska/openshift/kontit/
+          username: kontit
+          password: ${{ secrets.VERSION_PUSH_SECRET }}
