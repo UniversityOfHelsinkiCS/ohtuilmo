@@ -1,8 +1,8 @@
 # Ohtuilmo
 
-[![PROD](https://github.com/Ohtuilmo/ohtuilmo/actions/workflows/production.yaml/badge.svg)](https://github.com/Ohtuilmo/ohtuilmo/actions/workflows/staging.yaml)
-[![CI](https://github.com/Ohtuilmo/ohtuilmo/actions/workflows/staging.yaml/badge.svg)](https://github.com/Ohtuilmo/ohtuilmo/actions/workflows/staging.yaml)
-[![Ohtuilmo](https://img.shields.io/endpoint?url=https://cloud.cypress.io/badge/detailed/2e43ni/main&style=flat&logo=cypress)](https://cloud.cypress.io/projects/2e43ni/runs)
+[![PROD](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/production.yaml/badge.svg)](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/production.yaml)
+[![CI](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/staging.yaml/badge.svg)](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/staging.yaml)
+[![Tests](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/test.yaml/badge.svg)](https://github.com/UniversityOfHelsinkiCS/ohtuilmo/actions/workflows/test.yaml)
 
 Registration, administration and review tool for University of Helsinki's software engineering project course.
 
