@@ -2,7 +2,6 @@ import { withRouter } from '../utils/withRouter'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
-import ReactDragList from 'react-drag-list'
 
 import registrationActions from '../reducers/actions/registrationActions'
 import { setError } from '../reducers/actions/notificationActions'
@@ -11,8 +10,8 @@ import peerReviewService from '../services/peerReview'
 
 import Typography from '@mui/material/Typography'
 import { Input, Card, CardContent, Select, MenuItem } from '@mui/material'
-import TopicDialog from './TopicDialog'
 import CourseMaterial from './common/CourseMaterial'
+import SortableTopicList from './SortableTopicList'
 
 import { formatDate, extractCallingName } from '../utils/functions'
 
@@ -125,26 +124,8 @@ const PreferredTopics = ({ topics }) => {
   return (
     <div>
       <h2>Preferred Topics</h2>
-      <div className="dragndrop-container">
-        <div className="dragndrop-indexes-container">
-          {topics.map((topic, index) => {
-            return (
-              <Card key={index} className="dragndrop-index">
-                {index + 1}
-              </Card>
-            )
-          })}
-        </div>
-        <ReactDragList
-          className="dragndrop-list"
-          handles={false}
-          dataSource={topics}
-          rowKey="id"
-          row={(topic) => {
-            return <TopicDialog topic={topic} key={topic.content.title} />
-          }}
-          disabled
-        />
+      <div className="dragndrop-container" style={{ flexDirection: 'column' }}>
+        <SortableTopicList topics={topics} isReadOnly={true} />
       </div>
     </div>
   )

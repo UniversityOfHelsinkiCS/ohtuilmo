@@ -27,10 +27,6 @@
   flex-direction: row;
 }
 
-.dragndrop-list {
-  flex: 99;
-}
-
 .dragndrop-indexes-container {
   flex: 1;
   height: 80px;

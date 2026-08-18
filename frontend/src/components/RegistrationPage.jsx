@@ -2,7 +2,6 @@ import { withRouter } from '../utils/withRouter'
 import React from 'react'
 
 import { connect } from 'react-redux'
-import ReactDragList from 'react-drag-list'
 // MUI
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -19,7 +18,6 @@ import configurationService from '../services/configuration'
 // components
 import LoadingSpinner from './common/LoadingSpinner'
 import CourseMaterial from './common/CourseMaterial'
-import TopicDialog from './TopicDialog'
 import UserDetails from './UserDetails'
 import './RegistrationPage.css'
 // Actions
@@ -27,6 +25,7 @@ import registrationPageActions from '../reducers/actions/registrationPageActions
 import * as notificationActions from '../reducers/actions/notificationActions'
 import registrationActions from '../reducers/actions/registrationActions'
 import registrationmanagementActions from '../reducers/actions/registrationManagementActions'
+import SortableTopicList from './SortableTopicList'
 
 const Prerequisites = ({ checkbox1, checkbox2, checkbox3, onToggle1, onToggle2, onToggle3 }) => {
   return (
@@ -306,12 +305,6 @@ class RegistrationPage extends React.Component {
       </Card>
     ))
 
-    const indexes = this.props.topics.map((item, idx) => (
-      <Card key={idx} className="dragndrop-index">
-        {idx + 1}
-      </Card>
-    ))
-
     return (
       <div>
         <div
@@ -455,15 +448,7 @@ class RegistrationPage extends React.Component {
                   dragging and dropping, click to expand details
                 </div>
                 <div className="dragndrop-container">
-                  <div className="dragndrop-indexes-container">{indexes}</div>
-                  <ReactDragList
-                    className="dragndrop-list"
-                    handles={false}
-                    dataSource={this.props.topics}
-                    onUpdate={this.handleUpdate}
-                    rowKey="id"
-                    row={(topic) => <TopicDialog topic={topic} key={topic.content.title} />}
-                  />
+                  <SortableTopicList topics={this.props.topics} onUpdate={this.handleUpdate} />
                 </div>
               </>
             )}

@@ -7,6 +7,7 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Topic from './Topic'
 import Typography from '@mui/material/Typography'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 
 class TopicDialog extends React.Component {
   constructor(props) {
@@ -37,8 +38,29 @@ class TopicDialog extends React.Component {
       : 'Software is published under an open source license'
 
     return (
-      <Card style={{ margin: '2px', height: '78px' }}>
-        <CardContent style={{ padding, display: 'flex', flexDirection: 'row' }}>
+      <Card style={{ margin: '2px', minHeight: '78px' }}>
+        <CardContent
+          style={{
+            padding,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          {this.props.showDragIcon && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '12px',
+                color: '#888',
+                flexShrink: 0,
+              }}
+            >
+              <DragIndicatorIcon />
+            </div>
+          )}
           <div style={{ flex: 4 }}>
             <Typography style={{ flex: 1, fontWeight: 'bold' }}>
               {this.props.topic.content.title}

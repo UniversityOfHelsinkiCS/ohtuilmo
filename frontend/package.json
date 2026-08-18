@@ -19,6 +19,8 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
+    "@dnd-kit/helpers": "^0.2.4",
+    "@dnd-kit/react": "^0.2.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.2.0",
@@ -31,7 +33,6 @@
     "prop-types": "^15.8.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-drag-list": "^1.1.0",
     "react-markdown": "^10.1.0",
     "react-redux": "^9.3.0",
     "react-router-dom": "^7.18.2",
