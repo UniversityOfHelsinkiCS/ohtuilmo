@@ -143,7 +143,7 @@ const App = (props) => {
   const renderWithLoadingCheck = (component) => (isLoading ? <LoadingSpinner /> : component)
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <div id="app-wrapper">
         <NavigationBar logout={logout} />
         <Notification />
