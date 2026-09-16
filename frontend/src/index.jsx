@@ -87,6 +87,13 @@ const Root = () => {
           },
         },
       },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            backgroundColor: isDark ? 'rgba(253, 216, 53, 0.48)' : 'rgba(0,0,0,0.01)',
+          },
+        },
+      },
       MuiTableRow: {
         styleOverrides: {
           root: {
