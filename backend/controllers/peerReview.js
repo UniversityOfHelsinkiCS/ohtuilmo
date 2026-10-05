@@ -36,6 +36,11 @@ const validateAnswerSheet = (peerReview) => {
       if (error) {
         return error
       }
+    } else if (question.type === 'radioOneliner') {
+      error = validateRadioOneliner(question)
+      if (error) {
+        return error
+      }
     } else if (question.type === 'number') {
       error = validateNumberAnswer(question)
       if (error) {
@@ -66,11 +71,14 @@ const validatePeerReviewAnswer = (question) => {
 }
 
 const validateTextAnswer = (question) => {
+  if (question.optional) {
+    return null
+  }
   if (question.answer.length === 0) {
     return 'You must answer all questions'
   }
-  if (question.answer.length < 30) {
-    return 'Text answers must be over 30 characters long.'
+  if (question.answer.length < 10) {
+    return 'Text answers must be over 10 characters long.'
   }
   if (question.answer.length > 50000) {
     return 'Text answer must be less than 50000 characters.'
@@ -86,6 +94,12 @@ const validateRadioAnswer = (question) => {
     }
   })
   return error
+}
+
+const validateRadioOneliner = (question) => {
+  if (isNil(question.answer)) {
+    return 'You must answer this question'
+  }
 }
 
 const validateNumberAnswer = (question) => {

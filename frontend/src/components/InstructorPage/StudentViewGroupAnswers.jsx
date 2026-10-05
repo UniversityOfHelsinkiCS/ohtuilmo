@@ -106,6 +106,36 @@ const calculateAverageRating = (member, answers) => {
   return ratings.length > 0 ? (sum / ratings.length).toFixed(2) : 'N/A'
 }
 
+const RadioOneLinerSimple = ({ answer, questionNumber, question }) => {
+  const options = question.options
+  return (
+    <div className="padding-left-18">
+      <Table size="small" className="radio-button-table">
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            {options.map((option) => (
+              <TableCell key={option}>{option}</TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>{answer.student.last_name}</TableCell>
+            {options.map((_option, index) => {
+              return (
+                <TableCell key={`${answer.student.last_name}-${index}`}>
+                  {answer.answer_sheet[questionNumber].answer === index ? 'x' : ''}
+                </TableCell>
+              )
+            })}
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
 const StudentViewGroupAnswers = ({ answers }) => {
   return (
     <div className="padding-left-18 flex-column-72">
@@ -127,6 +157,15 @@ const StudentViewGroupAnswers = ({ answers }) => {
                   student={studentAnswer.student}
                 />
               )
+            } else if (question.type === 'radioOneliner') {
+              return (
+                <RadioOneLinerSimple
+                  key={questionIndex}
+                  answer={studentAnswer}
+                  questionNumber={questionIndex}
+                  question={question}
+                />
+              )
             } else if (question.type === 'peerReview') {
               return (
                 <PeerReviewAnswer
@@ -141,9 +180,9 @@ const StudentViewGroupAnswers = ({ answers }) => {
               )
             } else {
               return (
-                <div className="padding-left-18" key={questionIndex}>
+                <div style={{ width: '70%' }} key={questionIndex}>
                   <h3>{question.questionHeader}</h3>
-                  <p className="padding-left-18">{question.answer}</p>
+                  <p>{question.answer}</p>
                 </div>
               )
             }

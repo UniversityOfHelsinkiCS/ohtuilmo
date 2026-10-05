@@ -128,6 +128,7 @@ const getQuestions = (answers) => {
     return {
       type: question.type,
       questionHeader: question.questionHeader,
+      options: question.options ?? null,
     }
   })
 }
@@ -161,6 +162,12 @@ const GroupAnswers = ({ answers, students }) => {
           return (
             <Question key={index} title={question.questionHeader}>
               <RadioAnswer answers={answers} questionNumber={index} students={students} />
+            </Question>
+          )
+        } else if (question.type === 'radioOneliner') {
+          return (
+            <Question key={index} title={question.questionHeader}>
+              <RadioOneliner answers={answers} questionNumber={index} question={question} />
             </Question>
           )
         } else {
@@ -205,7 +212,7 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
     <div className="padding-left-18">
       {answers.map((member, index) => {
         return (
-          <div className="text-number-answer-container" key={index}>
+          <div style={{ width: '75%' }} key={index}>
             <p>
               {`${member.student.first_names} ${member.student.last_name}`}
               :&nbsp;
@@ -214,6 +221,40 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+const RadioOneliner = ({ answers, questionNumber, question }) => {
+  const options = question.options
+  return (
+    <div className="padding-left-18">
+      <Table size="small" className="radio-button-table">
+        <TableHead>
+          <TableRow>
+            <TableCell></TableCell>
+            {options.map((option) => (
+              <TableCell key={option}>{option}</TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {answers.map((answer, answerIndex) => {
+            return (
+              <TableRow key={answerIndex}>
+                <TableCell>{answer.student.last_name}</TableCell>
+                {options.map((_option, index) => {
+                  return (
+                    <TableCell key={`${answer.student.last_name}-${index}`}>
+                      {answer.answer_sheet[questionNumber].answer === index ? 'x' : ''}
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </div>
   )
 }

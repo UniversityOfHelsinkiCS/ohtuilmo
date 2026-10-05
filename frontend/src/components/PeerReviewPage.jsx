@@ -83,6 +83,17 @@ class PeerReview extends React.Component {
       return peerAnswers
     }
 
+    const initializeRadioOneliner = (question, questionId) => {
+      return {
+        type: 'radioOneliner',
+        id: questionId,
+        questionHeader: question.header,
+        options: question.options,
+        optional: question.optional ?? false,
+        answer: null,
+      }
+    }
+
     const initializeNumberAnswer = (question, questionId) => {
       return {
         type: 'number',
@@ -97,6 +108,7 @@ class PeerReview extends React.Component {
         type: 'text',
         questionHeader: question.header,
         id: questionId,
+        optional: question.optional ?? false,
         answer: '',
       }
     }
@@ -121,6 +133,8 @@ class PeerReview extends React.Component {
         return initializeProjectHours(question, questionID)
       } else if (question.type === 'radio') {
         return initializeRadioAnswer(question, questionID)
+      } else if (question.type === 'radioOneliner') {
+        return initializeRadioOneliner(question, questionID)
       } else if (question.type === 'peerReview') {
         return initializePeerReview(question, questionID)
       } else if (question.type === 'text') {
@@ -273,6 +287,31 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
         </Table>
       </div>
     )
+  } else if (question.type === 'radioOneliner') {
+    let temp = question.options
+
+    if (question.options === undefined) {
+      temp = ['Kyllä', 'Ei']
+    }
+    return (
+      <div className="peer-review-box">
+        <h3 className="peer-review-box__h3">{question.header}</h3>
+        <Table size="small" className="peer-review-box__radio-button-table">
+          <TableHead>
+            <TableRow hover>
+              <OptionHeaders options={temp} />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <QuestionRowOneLine
+              options={temp}
+              questionId={question.header}
+              answerSheet={answerSheet[questionId]}
+            />
+          </TableBody>
+        </Table>
+      </div>
+    )
   } else if (question.type === 'peerReview') {
     return (
       <div className="peer-review-box">
@@ -298,7 +337,7 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
             <TextField
               value={answerSheet[questionId].answer}
               rows="4"
-              style={{ width: 400 }}
+              style={{ width: '75%' }}
               multiline
               variant="outlined"
               onChange={(e) => textFieldHandler(e.target.value, questionId, updateAnswer)}
@@ -410,6 +449,24 @@ const QuestionRow = ({ peerName, options, peerId, questionId, answerSheet }) => 
   )
 }
 
+const QuestionRowOneLine = ({ options, questionId, answerSheet }) => {
+  return (
+    <TableRow hover className="peer-review-box__peer-row">
+      {options.map((buttonId, buttonNumber) => {
+        return (
+          <TableCell className="peer-review-box__radio-button" key={buttonId}>
+            <input
+              type="radio"
+              name={questionId.toString()}
+              onClick={() => radioSelectHandlerOneLine(buttonNumber, answerSheet)}
+            />
+          </TableCell>
+        )
+      })}
+    </TableRow>
+  )
+}
+
 const peerReviewHandler = (peerId, value, questionId, updatePeerReview) => {
   updatePeerReview(peerId, value, questionId)
 }
@@ -422,6 +479,13 @@ const radioSelectHandler = (peerId, buttonId, answerSheet) => {
   updateAnswers(peerId, buttonId, answerSheet)
 }
 
+const radioSelectHandlerOneLine = (buttonId, questionId) => {
+  updateOneliner(buttonId, questionId)
+}
+
+const updateOneliner = (buttonId, answerSheet) => {
+  answerSheet.answer = buttonId
+}
 const updateAnswers = (peerId, buttonId, answerSheet) => {
   answerSheet.peers[peerId] = buttonId
 }
