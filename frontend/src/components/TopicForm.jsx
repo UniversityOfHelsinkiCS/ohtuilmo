@@ -38,8 +38,6 @@ const TopicForm = (props) => {
     return value
   }
 
-  //console.log(props.content)
-
   const contract =
     props.content.organisation === 'company'
       ? 'https://github.com/HY-TKTL/TKT20007-Ohjelmistotuotantoprojekti/tree/master/sopimukset'

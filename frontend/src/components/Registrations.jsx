@@ -92,7 +92,6 @@ const Registrations = () => {
     return lines
   }
 
-  console.log(regs[0].questions)
   return (
     <div>
       <h3>Registrations {regs.length}</h3>

@@ -20,7 +20,6 @@ const updateOrganisation = (organisation) => {
 }
 
 const updateIp = (rights) => {
-  console.log(rights)
   return {
     type: 'UPDATE_IP_RIGHTS',
     payload: rights,

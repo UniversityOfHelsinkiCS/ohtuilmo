@@ -86,8 +86,6 @@ groupSprintSummaryRouter.get('/:id', checkLogin, async (req, res) => {
   const userId = req.user.id
   const isAdmin = req.user.admin
 
-  //console.log('Group sprint summary request for group: ', groupId, ' by user: ', userId)
-
   const access = (await validateAccess(groupId, userId)) || isAdmin
 
   if (!access) {
