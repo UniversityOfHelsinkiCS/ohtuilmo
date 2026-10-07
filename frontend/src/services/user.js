@@ -20,6 +20,19 @@ const update = async (user) => {
   return response.data
 }
 
+const updateUserConsent = async (consent, user) => {
+  const config = {
+    headers: { Authorization: 'bearer ' + getUserToken() },
+  }
+  const studentNumber = user.student_number
+  const response = await axios.put(
+    url + '/consent/' + studentNumber,
+    { research_consent: consent },
+    config,
+  )
+  return response.data
+}
+
 const checkInstructor = async (token) => {
   const config = {
     headers: { Authorization: 'bearer ' + token },
@@ -28,4 +41,4 @@ const checkInstructor = async (token) => {
   return response.data
 }
 
-export default { get, update, checkInstructor }
+export default { get, update, checkInstructor, updateUserConsent }

@@ -17,6 +17,11 @@ const loginReducer = (state = initialState, action) => {
         ...state,
         user: null,
       }
+    case 'UPDATE_CONSENT':
+      return {
+        ...state,
+        research_consent: action.payload,
+      }
     case 'UPDATE_USERNAME':
       return {
         ...state,

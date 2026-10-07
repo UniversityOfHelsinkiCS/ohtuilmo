@@ -1,15 +1,26 @@
 import { withRouter } from '../utils/withRouter'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 
 import registrationActions from '../reducers/actions/registrationActions'
 import { setError } from '../reducers/actions/notificationActions'
-
+import { updateConsent } from '../reducers/actions/userActions'
 import peerReviewService from '../services/peerReview'
 
 import Typography from '@mui/material/Typography'
-import { Input, Card, CardContent, Select, MenuItem } from '@mui/material'
+import {
+  Input,
+  Card,
+  CardContent,
+  Select,
+  MenuItem,
+  RadioGroup,
+  Radio,
+  FormControl,
+  FormControlLabel,
+  Button,
+} from '@mui/material'
 import CourseMaterial from './common/CourseMaterial'
 import SortableTopicList from './SortableTopicList'
 
@@ -65,6 +76,59 @@ class PeerReviewInfo extends React.Component {
       </div>
     )
   }
+}
+
+const ResearchConsent = ({ student }) => {
+  const [consent, setConsent] = useState(student.research_consent)
+  const dispatch = useDispatch()
+  const handleUpdate = () => {
+    dispatch(updateConsent(consent, student))
+  }
+  return (
+    <div>
+      <Typography variant="h2">Tutkimuslupa</Typography>
+      <Typography style={{ width: '60%' }}>
+        Yliopiston tehtäviin kuuluvat opetuksen lisäksi myös tutkimuksen teko. Te opiskelijat olette
+        tärkeä osa prosessia, ilman teitä laadukasta yliopisto-opetuksen tutkimusta on vaikea tehdä.
+        Olemme tekemässä Helsingin yliopistossa tutkimusta generatiivisen tekoälyn käytöstä
+        opintojen aikana. Mikäli osallistut tutkimukseen, vastauksesi kysymyksiin voidaan yhdistää
+        arvosana- ja kurssisuoritustietoihisi, mutta sinua tai ryhmääsi ei voida tunnistaa
+        julkaistusta tutkimuksesta. Lisätietoja voi kysyä Matti Luukkaiselta (vastuuopettaja) tai
+        Outi Savolaiselta (opettaja).
+      </Typography>
+      <br />
+      <Typography style={{ width: '60%' }}>
+        Vertaisarviossa tai tuntikirjanpidossa antamasi vastaukset tekoälynkäytöstä eivät vaikuta
+        arvosanaasi tai kohteluusi kurssilla.
+      </Typography>
+      <FormControl>
+        <RadioGroup
+          name="research-consent-group"
+          value={consent ? 'consentGiven' : 'denied'}
+          onChange={() => setConsent(!consent)}
+        >
+          <FormControlLabel
+            value={'consentGiven'}
+            control={<Radio />}
+            label="Osallistun oppimiseen liittyvään tutkimukseen."
+          />
+          <FormControlLabel
+            value={'denied'}
+            control={<Radio />}
+            label="En osallistu oppimiseen liittyvään tutkimukseen."
+          />
+        </RadioGroup>
+        <Button
+          style={{ marginRight: '10px', height: '40px', width: 250 }}
+          color="inherit"
+          variant="outlined"
+          onClick={handleUpdate}
+        >
+          Tallenna valintasi
+        </Button>
+      </FormControl>
+    </div>
+  )
 }
 
 const GroupDetails = ({ groupDetails }) => {
@@ -187,6 +251,7 @@ class RegistrationDetailsPage extends React.Component {
       projectRegistrationConf,
       peerReviewOpen,
       peerReviewRound,
+      user,
     } = this.props
 
     if (groupDetails) {
@@ -198,6 +263,7 @@ class RegistrationDetailsPage extends React.Component {
             peerReviewRound={peerReviewRound}
             groupDetails={groupDetails}
           />
+          <ResearchConsent student={user} />
         </div>
       )
     }
@@ -249,6 +315,7 @@ const mapStateToProps = (state) => {
     peerReviewRound: state.registrationManagement.peerReviewRound,
     peerReviewConf: state.registrationManagement.peerReviewConf,
     projectRegistrationConf: state.registrationManagement.projectRegistrationConf,
+    user: state.login.user.user,
   }
 }
 

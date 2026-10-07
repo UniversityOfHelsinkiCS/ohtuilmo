@@ -23,6 +23,10 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      research_consent: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       underscored: true,

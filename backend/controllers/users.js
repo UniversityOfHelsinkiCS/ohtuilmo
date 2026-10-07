@@ -2,6 +2,26 @@ const usersRouter = require('express').Router()
 const db = require('../models/index')
 const { checkLogin, checkInstructor } = require('../middleware')
 
+usersRouter.put('/consent/:studentNumber', checkLogin, async (req, res) => {
+  const { research_consent } = req.body
+  const { studentNumber } = req.params
+
+  try {
+    const user = await db.User.findOne({
+      where: { student_number: studentNumber },
+    })
+    if (!user) {
+      return res.status(400).json({ error: 'user does not exist' })
+    }
+    const updatedUser = await user.update({ research_consent })
+    const refreshedUser = await updatedUser.reload()
+    res.status(200).json({ user: refreshedUser })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Something is wrong... try reloading the page' })
+  }
+})
+
 usersRouter.put('/:studentNumber', checkLogin, async (req, res) => {
   const { email } = req.body
   const { studentNumber } = req.params

@@ -7,6 +7,18 @@ const updateIsInstructor = (user, isInstructor) => ({
   instructor: isInstructor,
 })
 
+export const updateConsent = (consent, user) => {
+  return async (dispatch) => {
+    const { user: updatedUser } = await userService.updateUserConsent(consent, user)
+    dispatch({
+      type: 'UPDATE_CONSENT',
+      payload: {
+        research_consent: updatedUser.research_consent,
+      },
+    })
+  }
+}
+
 export const loginUser = (userCredentials) => {
   return async (dispatch) => {
     const { user, token } = await loginService.login(userCredentials)
