@@ -88,18 +88,18 @@ const ResearchConsent = ({ student }) => {
     <div>
       <Typography variant="h2">Tutkimuslupa</Typography>
       <Typography style={{ width: '60%' }}>
-        Yliopiston tehtäviin kuuluvat opetuksen lisäksi myös tutkimuksen teko. Te opiskelijat olette
-        tärkeä osa prosessia, ilman teitä laadukasta yliopisto-opetuksen tutkimusta on vaikea tehdä.
-        Olemme tekemässä Helsingin yliopistossa tutkimusta generatiivisen tekoälyn käytöstä
-        opintojen aikana. Mikäli osallistut tutkimukseen, vastauksesi kysymyksiin voidaan yhdistää
-        arvosana- ja kurssisuoritustietoihisi, mutta sinua tai ryhmääsi ei voida tunnistaa
-        julkaistusta tutkimuksesta. Lisätietoja voi kysyä Matti Luukkaiselta (vastuuopettaja) tai
-        Outi Savolaiselta (opettaja).
+        Teemme Helsingin yliopistossa tutkimusta generatiivisen tekoälyn käytöstä opintojen aikana.
+        Tällä kurssilla vertaisarvioinneissa ja tuntikirjanpidossa (timelogs) tullaan esittämään
+        kysymyksiä generatiivisen tekoälyn käytöstä osana ohjelmistoprojektia. Näihin kysymyksiin
+        annettuja vastauksia voidaan hyödyntää kurssin kehityksen lisäksi tutkimuksessa. Osana
+        aineiston analyysiä vastauksesi kysymyksiin voidaan yhdistää arvosana- ja
+        kurssisuoritustietoihisi, mutta sinua tai ryhmääsi ei voida tunnistaa julkaistusta
+        tutkimuksesta. Lisätietoja voi kysyä Matti Luukkaiselta (vastuuopettaja) tai Outi
+        Savolaiselta (opettaja).
       </Typography>
       <br />
-      <Typography style={{ width: '60%' }}>
-        Vertaisarviossa tai tuntikirjanpidossa antamasi vastaukset tekoälynkäytöstä eivät vaikuta
-        arvosanaasi tai kohteluusi kurssilla.
+      <Typography style={{ width: '60%', fontWeight: 'bold' }}>
+        Tutkimukseen osallistuminen tai siitä kieltäytyminen ei vaikuta kohteluusi kurssilla.
       </Typography>
       <FormControl>
         <RadioGroup
@@ -110,12 +110,12 @@ const ResearchConsent = ({ student }) => {
           <FormControlLabel
             value={'consentGiven'}
             control={<Radio />}
-            label="Osallistun oppimiseen liittyvään tutkimukseen."
+            label="Kyllä, vastauksiani saa hyödyntää myös tutkimuksessa."
           />
           <FormControlLabel
             value={'denied'}
             control={<Radio />}
-            label="En osallistu oppimiseen liittyvään tutkimukseen."
+            label="Ei, vastauksiani saa käyttää vain kurssin kehitykseen"
           />
         </RadioGroup>
         <Button
