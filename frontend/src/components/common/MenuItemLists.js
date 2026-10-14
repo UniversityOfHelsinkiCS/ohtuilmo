@@ -106,13 +106,14 @@ const adminItems = (history) => {
       items: [
         {
           className: 'configuration-menu-item',
-          text: 'Configuration',
-          description: 'Create and edit course configurations and choose their question sets.',
+          text: 'Course instance questions',
+          description:
+            'Create course instances (configurations) and choose the question sets each one uses.',
           handler: () => history.push('/administration/configuration'),
         },
         {
           className: 'registration-management-menu-item',
-          text: 'Registration Management',
+          text: 'Registration and review settings',
           description:
             'Open and close registrations and peer reviews, and choose the configuration each one uses.',
           handler: () => history.push('/administration/registrationmanagement'),
