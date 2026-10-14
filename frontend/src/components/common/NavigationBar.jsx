@@ -111,30 +111,40 @@ const NavigationBar = ({
     }
   }
 
+  // the role of the logged in test user is shown as the selected button
+  const currentRole = user
+    ? user.user.admin
+      ? 'admin'
+      : user.user.instructor
+        ? 'instructor'
+        : 'student'
+    : null
+
+  const roleButton = (role, label) => {
+    const selected = role === currentRole
+    return (
+      <Button
+        variant={selected ? 'contained' : 'outlined'}
+        aria-pressed={selected}
+        style={{
+          color: '#323232',
+          borderColor: '#c2a628',
+          backgroundColor: selected ? '#c2a628' : undefined,
+          fontWeight: selected ? 600 : undefined,
+        }}
+        onClick={async () => await handleClick(role)}
+      >
+        {label}
+      </Button>
+    )
+  }
+
   let select_role =
     import.meta.env.MODE === 'development' ? (
       <div style={{ marginRight: '10px' }}>
-        <Button
-          variant="outlined"
-          style={{ color: '#323232', borderColor: '#c2a628' }}
-          onClick={async () => await handleClick('student')}
-        >
-          Student
-        </Button>
-        <Button
-          variant="outlined"
-          style={{ color: '#323232', borderColor: '#c2a628' }}
-          onClick={async () => await handleClick('instructor')}
-        >
-          Instructor
-        </Button>
-        <Button
-          variant="outlined"
-          style={{ color: '#323232', borderColor: '#c2a628' }}
-          onClick={async () => await handleClick('admin')}
-        >
-          Admin
-        </Button>
+        {roleButton('student', 'Student')}
+        {roleButton('instructor', 'Instructor')}
+        {roleButton('admin', 'Admin')}
       </div>
     ) : (
       ''
