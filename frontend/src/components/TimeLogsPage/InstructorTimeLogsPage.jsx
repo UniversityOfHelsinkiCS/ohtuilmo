@@ -1,5 +1,6 @@
 import { withRouter } from '../../utils/withRouter'
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { connect } from 'react-redux'
 import { StudentSelectionForm } from '../common/StudentSelectionForm'
@@ -15,6 +16,7 @@ import Button from '@mui/material/Button'
 import userService from '../../services/user'
 import sprintService from '../../services/sprints'
 import configurationService from '../../services/configuration'
+import registrationManagementService from '../../services/registrationManagement'
 import groupManagementService from '../../services/groupManagement'
 import timeLogsService from '../../services/timeLogs'
 import instructorTimeLogsService from '../../services/instructorTimeLogs'
@@ -33,14 +35,23 @@ const InstructorTimeLogsPage = (props) => {
     user,
   } = props
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [allConfigurations, setAllConfigurations] = useState([])
-  const [selectedConfigurationId, setSelectedConfigurationId] = useState(0)
+  const [selectedConfigurationId, setSelectedConfigurationId] = useState(
+    () => Number(searchParams.get('configuration')) || 0,
+  )
   const [allGroups, setAllGroups] = useState([])
-  const [selectedGroupId, setSelectedGroupId] = useState(0)
+  const [selectedGroupId, setSelectedGroupId] = useState(
+    () => Number(searchParams.get('group')) || 0,
+  )
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [allStudents, setAllStudents] = useState([])
   const [allSprints, setAllSprints] = useState([])
-  const [selectedStudentNumber, setSelectedStudentNumber] = useState(0)
+  const [selectedStudentNumber, setSelectedStudentNumber] = useState(
+    () => searchParams.get('student') || 0,
+  )
+  const [selectionInitialized, setSelectionInitialized] = useState(false)
   const [allLogs, setAllLogs] = useState(null)
   const [checkedTimeLogs, setCheckedTimeLogs] = useState([])
   const [moveToPreviousSprintConfirmOpen, setMoveToPreviousSprintConfirmOpen] = useState(false)
@@ -50,10 +61,26 @@ const InstructorTimeLogsPage = (props) => {
   const possibleSprintNumbers = allSprints.map((sprint) => sprint.sprint).sort((a, b) => a - b)
 
   useEffect(() => {
+    const fetchCurrentConfigurationId = async () => {
+      try {
+        const { registrationManagement } = await registrationManagementService.get()
+        return registrationManagement.peer_review_conf
+      } catch {
+        return null
+      }
+    }
+
     const fetchAllConfigurations = async () => {
       try {
         const allConfigurations = await configurationService.getAll()
-        setAllConfigurations(allConfigurations.configurations)
+        const currentConfigurationId = await fetchCurrentConfigurationId()
+        // current configuration first, then the rest from newest to oldest
+        const sortedConfigurations = [...allConfigurations.configurations].sort((a, b) => {
+          if (a.id === currentConfigurationId) return -1
+          if (b.id === currentConfigurationId) return 1
+          return b.id - a.id
+        })
+        setAllConfigurations(sortedConfigurations)
       } catch (error) {
         console.error('Error fetching groups:', error.message, ' / ', error.response.data.error)
         setError(error.response.data.error)
@@ -103,6 +130,20 @@ const InstructorTimeLogsPage = (props) => {
 
   useEffect(() => {
     if (allConfigurations.length > 0 && allGroups.length > 0) {
+      // selection given in the url takes precedence over the default selection
+      const groupFromUrl = allGroups.find((group) => group.id === selectedGroupId)
+      if (groupFromUrl) {
+        setSelectedConfigurationId(groupFromUrl.configurationId)
+        setSelectedGroup(groupFromUrl)
+        setSelectionInitialized(true)
+        return
+      }
+      if (selectedConfigurationId && !selectedGroupId) {
+        setSelectedStudentNumber(0)
+        setSelectionInitialized(true)
+        return
+      }
+
       const allGroupsInSortedOrder = [...allGroups] // clones the array
       allGroupsInSortedOrder.sort((a, b) => a.id - b.id)
       const newestGroupByInstructor = allGroupsInSortedOrder.findLast(
@@ -114,8 +155,19 @@ const InstructorTimeLogsPage = (props) => {
       setSelectedConfigurationId(configurationByInstructor?.id ?? 0)
       setSelectedGroupId(newestGroupByInstructor?.id ?? 0)
       setSelectedGroup(newestGroupByInstructor?.id ? newestGroupByInstructor : null)
+      setSelectedStudentNumber(0)
+      setSelectionInitialized(true)
     }
   }, [allConfigurations, allGroups])
+
+  useEffect(() => {
+    if (!selectionInitialized) return
+    const params = {}
+    if (selectedConfigurationId) params.configuration = selectedConfigurationId
+    if (selectedGroupId) params.group = selectedGroupId
+    if (selectedStudentNumber) params.student = selectedStudentNumber
+    setSearchParams(params, { replace: true })
+  }, [selectionInitialized, selectedConfigurationId, selectedGroupId, selectedStudentNumber])
 
   useEffect(() => {
     const fetchGroupSprintSummary = async (group_id) => {
