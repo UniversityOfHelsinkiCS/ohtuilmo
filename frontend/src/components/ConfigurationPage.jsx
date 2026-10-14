@@ -19,6 +19,7 @@ import Divider from '@mui/material/Divider'
 
 // Service
 import configurationService from '../services/configuration'
+import registrationManagementService from '../services/registrationManagement'
 import registrationQuestionSetService from '../services/registrationQuestionSet'
 import reviewQuestionSetService from '../services/peerReviewQuestionSet'
 import customerReviewQuestionService from '../services/customerReviewQuestionSet'
@@ -30,19 +31,50 @@ import questionsFormPageActions from '../reducers/actions/questionsFormPageActio
 import RegistrationQuestionsTable from './RegistrationQuestionsTable'
 import PeerReviewQuestionsTable from './PeerReviewQuestionsTable'
 
+const SelectedSetName = ({ questionSet }) => (
+  <p
+    style={{
+      marginLeft: 32,
+      fontWeight: questionSet ? 600 : 'normal',
+      opacity: questionSet ? 1 : 0.6,
+    }}
+  >
+    {questionSet ? questionSet.name : 'No set selected'}
+  </p>
+)
+
 const ConfigurationPage = (props) => {
   useEffect(() => {
     setQuestions()
 
-    const fetchConfigurations = async () => await props.fetchConfigurations()
-
-    try {
-      fetchConfigurations()
-    } catch (err) {
-      console.log(err)
-      props.setError('Error fetching configurations', 5000)
+    const fetchConfigurations = async () => {
+      try {
+        const configurations = await props.fetchConfigurations()
+        // keep a configuration that was already selected earlier
+        if (!props.selectedConfig) {
+          await selectCurrentConfiguration(configurations)
+        }
+      } catch (err) {
+        console.log(err)
+        props.setError('Error fetching configurations', 5000)
+      }
     }
+
+    fetchConfigurations()
   }, [])
+
+  // the current configuration is the one used by the peer review
+  const selectCurrentConfiguration = async (configurations) => {
+    const { registrationManagement } = await registrationManagementService.get()
+    const currentConfiguration = configurations.find(
+      (configuration) => configuration.id === registrationManagement.peer_review_conf,
+    )
+    if (currentConfiguration) {
+      props.updateSelectedConfig(currentConfiguration)
+      props.updateConfigForm(currentConfiguration)
+      props.updateNewStatus(false)
+    }
+  }
 
   const setQuestions = async () => {
     try {
@@ -182,6 +214,7 @@ const ConfigurationPage = (props) => {
               }}
             >
               <p>Registration questions</p>
+              <SelectedSetName questionSet={props.selectedRegister} />
             </div>
           </AccordionSummary>
           <AccordionDetails>
@@ -228,6 +261,7 @@ const ConfigurationPage = (props) => {
               }}
             >
               <p>Peer review questions 1</p>
+              <SelectedSetName questionSet={props.selectedReview1} />
             </div>
           </AccordionSummary>
           <AccordionDetails>
@@ -275,6 +309,7 @@ const ConfigurationPage = (props) => {
               }}
             >
               <p>Peer review questions 2</p>
+              <SelectedSetName questionSet={props.selectedReview2} />
             </div>
           </AccordionSummary>
           <AccordionDetails>
@@ -321,6 +356,7 @@ const ConfigurationPage = (props) => {
               }}
             >
               <p>Customer review questions</p>
+              <SelectedSetName questionSet={props.selectedCustomerReview} />
             </div>
           </AccordionSummary>
           <AccordionDetails>

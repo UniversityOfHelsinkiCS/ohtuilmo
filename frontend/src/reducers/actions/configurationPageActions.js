@@ -3,7 +3,9 @@ import configurationService from '../../services/configuration'
 const fetchConfigurations = () => {
   return async (dispatch) => {
     const response = await configurationService.getAll()
-    dispatch({ type: 'SET_CONFIGURATIONS', payload: response.configurations.reverse() })
+    const configurations = response.configurations.reverse()
+    dispatch({ type: 'SET_CONFIGURATIONS', payload: configurations })
+    return configurations
   }
 }
 
