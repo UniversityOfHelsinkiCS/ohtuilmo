@@ -1,5 +1,6 @@
 import { withRouter } from '../../utils/withRouter'
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 
 import { withStyles } from '@mui/styles'
@@ -487,7 +488,15 @@ const InstructorPage = (props) => {
     setError,
   } = props
 
-  const [viewMode, setViewMode] = useState('questions')
+  const [searchParams, setSearchParams] = useSearchParams()
+  // selection given in the url when the page was opened
+  const [initialSelection] = useState(() => ({
+    configurationId: Number(searchParams.get('configuration')),
+    groupId: Number(searchParams.get('group')),
+  }))
+  const [viewMode, setViewMode] = useState(() =>
+    searchParams.get('view') === 'students' ? 'students' : 'questions',
+  )
 
   useEffect(() => {
     const fetchData = async () => {
@@ -496,11 +505,18 @@ const InstructorPage = (props) => {
         const groupsData = peerReviewData.map((data) => data.group)
         const uniqueConfigurations = getUniqueConfigurations(groupsData)
 
+        const groupFromUrl = groupsData.find((group) => group.id === initialSelection.groupId)
+        const configurationFromUrl = uniqueConfigurations.find(
+          (configuration) =>
+            configuration.id ===
+            (groupFromUrl?.configurationId ?? initialSelection.configurationId),
+        )
+
         setAnswers(peerReviewData)
         setConfigurations(uniqueConfigurations.reverse())
-        setCurrentConfiguration(uniqueConfigurations[0].id)
+        setCurrentConfiguration(configurationFromUrl?.id ?? uniqueConfigurations[0].id)
         setGroups(groupsData)
-        setCurrentGroupID('0')
+        setCurrentGroupID(groupFromUrl ? groupFromUrl.id : '0')
       } catch (err) {
         console.error('error happened', err, err.response)
         setError('Something is wrong... try reloading the page')
@@ -515,7 +531,16 @@ const InstructorPage = (props) => {
     setError,
     setGroups,
     setCurrentGroupID,
+    initialSelection,
   ])
+
+  useEffect(() => {
+    if (!currentConfiguration || !currentGroupID) return
+    const params = { configuration: currentConfiguration }
+    if (currentGroupID !== '0') params.group = currentGroupID
+    if (viewMode === 'students') params.view = viewMode
+    setSearchParams(params, { replace: true })
+  }, [currentConfiguration, currentGroupID, viewMode, setSearchParams])
 
   if (!answers || !currentConfiguration || !groups || !currentGroupID) {
     return <div className="flex-column-32-container">Loading</div>
