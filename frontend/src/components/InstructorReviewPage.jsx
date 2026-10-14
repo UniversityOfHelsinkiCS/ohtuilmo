@@ -23,27 +23,40 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import instructorReviewService from '../services/instructorReview'
 
 class InstructorReviewPage extends React.Component {
+  state = {
+    notInstructing: false,
+  }
+
   async componentDidMount() {
     try {
-      const groups = await groupManagementService.getByInstructor()
-      const answers = await instructorReviewService.getAllAnsweredGroupId()
-
-      const filteredGroups = groups.filter((group) => {
-        return !answers.includes(group.id)
-      })
-      if (filteredGroups.length === 0) {
-        this.props.setSubmittedReview(true)
-      } else if (filteredGroups.length > 0) {
-        this.props.setGroups(filteredGroups)
-        this.fetchInstructorReviewQuestions(
-          filteredGroups[0].students,
-          questionsJson,
-          this.props.initializeAnswerSheet,
-        )
-      }
+      await this.loadGroups()
     } catch (e) {
       console.error('Error happened:', e.response?.data?.error)
       this.props.setError('Something is wrong... try reloading the page')
+    }
+  }
+
+  // loads the instructed groups that have not been reviewed yet
+  async loadGroups() {
+    const groups = await groupManagementService.getByInstructor()
+    if (groups.length === 0) {
+      this.setState({ notInstructing: true })
+      return
+    }
+    const answers = await instructorReviewService.getAllAnsweredGroupId()
+
+    const filteredGroups = groups.filter((group) => {
+      return !answers.includes(group.id)
+    })
+    if (filteredGroups.length === 0) {
+      this.props.setSubmittedReview(true)
+    } else {
+      this.props.setGroups(filteredGroups)
+      this.fetchInstructorReviewQuestions(
+        filteredGroups[0].students,
+        questionsJson,
+        this.props.initializeAnswerSheet,
+      )
     }
   }
 
@@ -126,22 +139,7 @@ class InstructorReviewPage extends React.Component {
 
       this.props.setSuccess('Instructor review saved!')
 
-      const groups = await groupManagementService.getByInstructor()
-      const answers = await instructorReviewService.getAllAnsweredGroupId()
-
-      const filteredGroups = groups.filter((group) => {
-        return !answers.includes(group.id)
-      })
-      if (filteredGroups.length === 0) {
-        this.props.setSubmittedReview(true)
-      } else if (filteredGroups.length > 0) {
-        this.props.setGroups(filteredGroups)
-        this.fetchInstructorReviewQuestions(
-          filteredGroups[0].students,
-          questionsJson,
-          this.props.initializeAnswerSheet,
-        )
-      }
+      await this.loadGroups()
     } catch (e) {
       console.log('error happened', e)
       this.props.setError(e.response.data.error)
@@ -159,7 +157,13 @@ class InstructorReviewPage extends React.Component {
       initializeAnswerSheet,
     } = this.props
 
-    if (submittedReview === true) {
+    if (this.state.notInstructing) {
+      return (
+        <div>
+          <h3>You are not instructing any groups.</h3>
+        </div>
+      )
+    } else if (submittedReview === true) {
       return (
         <div>
           <h3>You have reviewed every group you are instructing.</h3>

@@ -359,10 +359,6 @@ router.get('/byinstructor/:instructor', checkLogin, async (req, res) => {
         },
       ],
     })
-    if (groups.length === 0) {
-      return res.status(404).json({ error: 'Querying user not an instructor' })
-    }
-
     return res.status(200).json(
       groups.map((group) => {
         return {
