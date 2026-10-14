@@ -12,7 +12,7 @@ describe('Menu items for different user roles', () => {
         .click()
         .then(() => {
           cy.get('#hamburger-menu-popper').within(() => {
-            cy.contains('Admin').should('exist')
+            cy.contains('Course').should('exist')
             cy.contains('Create Topic').should('exist')
             cy.contains('Topics').should('exist')
             cy.contains('Grades given by instructors').should('exist')

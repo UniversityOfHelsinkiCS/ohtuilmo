@@ -18,7 +18,7 @@ import NavigationMenu from './NavigationMenu'
 import {
   regularItems,
   loggedInItems,
-  adminItems,
+  adminMenuSections,
   instructorItems,
   loggedInUnregisteredItems,
 } from './MenuItemLists'
@@ -42,12 +42,7 @@ const NavigationBar = ({
 
     if (user.user.admin) {
       return {
-        items: [
-          { title: 'Admin', items: adminItems(history) },
-          { title: 'Instructor', items: instructorItems(history) },
-          { title: 'Student', items: loggedInItems(history) },
-          { title: 'Student - no group', items: loggedInUnregisteredItems(history) },
-        ],
+        items: adminMenuSections(history),
       }
     } else if (user.user.instructor) {
       return {
@@ -166,7 +161,10 @@ const NavigationBar = ({
     <div className="navigation-bar-container">
       <AppBar position="static">
         <Toolbar style={{ zIndex: 1500 }}>
-          <NavigationMenu menuItems={getAppropriateMenuItemList()} />
+          <NavigationMenu
+            menuItems={getAppropriateMenuItemList()}
+            sectioned={Boolean(user?.user.admin)}
+          />
           <Typography
             variant="h6"
             color="inherit"

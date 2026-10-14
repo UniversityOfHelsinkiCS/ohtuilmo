@@ -6,6 +6,7 @@ import Paper from '@mui/material/Paper'
 import Popper from '@mui/material/Popper'
 import MenuItem from '@mui/material/MenuItem'
 import MenuList from '@mui/material/MenuList'
+import ListSubheader from '@mui/material/ListSubheader'
 import MenuIcon from '@mui/icons-material/Menu'
 import './NavigationBar.css'
 
@@ -61,6 +62,24 @@ class NavigationMenu extends React.Component {
       })
     }
 
+    const renderSections = () => (
+      <div className="navigation-menu__sections">
+        {menuItemsArray.map((section) => (
+          <MenuList
+            key={section.title}
+            dense
+            subheader={
+              <ListSubheader disableSticky className="navigation-menu__section-title">
+                {section.title}
+              </ListSubheader>
+            }
+          >
+            {renderMenuItems(section.items)}
+          </MenuList>
+        ))}
+      </div>
+    )
+
     return (
       <div className="navigation-menu">
         <div>
@@ -94,18 +113,22 @@ class NavigationMenu extends React.Component {
               >
                 <Paper>
                   <ClickAwayListener onClickAway={this.handleClose}>
-                    <MenuList>
-                      {menuItemsArray.map((group, index) =>
-                        group.title ? (
-                          <React.Fragment key={`group-${index}`}>
-                            <MenuItem disabled>{group.title}</MenuItem>
-                            {renderMenuItems(group.items)}
-                          </React.Fragment>
-                        ) : (
-                          renderMenuItems(group)
-                        ),
-                      )}
-                    </MenuList>
+                    {this.props.sectioned ? (
+                      renderSections()
+                    ) : (
+                      <MenuList>
+                        {menuItemsArray.map((group, index) =>
+                          group.title ? (
+                            <React.Fragment key={`group-${index}`}>
+                              <MenuItem disabled>{group.title}</MenuItem>
+                              {renderMenuItems(group.items)}
+                            </React.Fragment>
+                          ) : (
+                            renderMenuItems(group)
+                          ),
+                        )}
+                      </MenuList>
+                    )}
                   </ClickAwayListener>
                 </Paper>
               </Grow>
