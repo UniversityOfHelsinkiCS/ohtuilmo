@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 import Paper from '@mui/material/Paper'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import {
   fetchPeerReviewQuestionSets,
@@ -19,12 +20,23 @@ import './PeerReviewQuestionsPage.css'
 const isValidationError = (e) => e.response && e.response.status === 400
 
 class PeerReviewQuestionsPage extends React.Component {
+  state = {
+    // ids of the sets that existed when the page was opened, null until loaded
+    initialIds: null,
+    createFormOpen: false,
+  }
+
   async componentDidMount() {
+    await this.loadQuestionSets()
+  }
+
+  async loadQuestionSets() {
     try {
       await this.props.fetchPeerReviewQuestionSets()
     } catch (err) {
       this.handleError(err)
     }
+    this.setState({ initialIds: new Set(this.props.questionSets.map((set) => set.id)) })
   }
 
   handleError = (e) => {
@@ -54,23 +66,41 @@ class PeerReviewQuestionsPage extends React.Component {
 
   render() {
     const { questionSets } = this.props
+    const { initialIds, createFormOpen } = this.state
 
     return (
       <div className="peer-review-questions-page">
         <h1>Configure peer review questions</h1>
         <div className="peer-review-questions-page__container">
           <section style={{ marginBottom: '2rem' }}>
-            <h2>Create question set</h2>
-            <Paper depth={1} className="peer-review-questions-page__create-form">
-              <CreatePeerReviewQuestionSet />
-            </Paper>
+            <h2 className="peer-review-questions-page__create-title">
+              <button
+                type="button"
+                className="peer-review-questions-page__create-toggle"
+                aria-expanded={createFormOpen}
+                onClick={() => this.setState({ createFormOpen: !createFormOpen })}
+              >
+                <ExpandMoreIcon
+                  className={`peer-review-questions-page__create-toggle-icon${createFormOpen ? ' peer-review-questions-page__create-toggle-icon--open' : ''}`}
+                />
+                Create question set
+              </button>
+            </h2>
+            {createFormOpen && (
+              <Paper depth={1} className="peer-review-questions-page__create-form">
+                <CreatePeerReviewQuestionSet />
+              </Paper>
+            )}
           </section>
           <section>
             <h2>Question sets</h2>
-            <PeerReviewQuestionSetList
-              questionSets={questionSets}
-              onQuestionSetUpdate={this.handleQuestionSetUpdate}
-            />
+            {initialIds && (
+              <PeerReviewQuestionSetList
+                questionSets={questionSets}
+                onQuestionSetUpdate={this.handleQuestionSetUpdate}
+                initialIds={initialIds}
+              />
+            )}
           </section>
         </div>
       </div>

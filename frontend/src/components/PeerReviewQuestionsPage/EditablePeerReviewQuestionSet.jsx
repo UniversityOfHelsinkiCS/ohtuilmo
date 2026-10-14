@@ -6,9 +6,18 @@ import { peerReviewQuestionSetShape } from '../common/sharedPropTypes'
 import QuestionSetItem from '../QuestionSetItem'
 import QuestionSetItemEditor from '../QuestionSetItemEditor'
 import PeerReviewQuestionsTable from '../PeerReviewQuestionsTable'
+import PeerReviewQuestionsPreview from './PeerReviewQuestionsPreview'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
-const EditableRegistrationQuestionSet = ({ questionSet, onEditSave }) => {
+const renderPreview = (questions) => <PeerReviewQuestionsPreview questions={questions} />
+
+const EditableRegistrationQuestionSet = ({ questionSet, onEditSave, startExpanded = false }) => {
   const [isEditing, setIsEditing] = useState(false)
+  // sets that existed when the page was opened start collapsed, the ones the user
+  // has created or edited are shown expanded
+  const [expanded, setExpanded] = useState(startExpanded)
+  const [view, setView] = useState('table')
 
   const handleEditorSave = (name, questionsJson) => {
     const questions = JSON.parse(questionsJson)
@@ -20,13 +29,34 @@ const EditableRegistrationQuestionSet = ({ questionSet, onEditSave }) => {
     }
     onEditSave(updatedItem)
     setIsEditing(false)
+    setExpanded(true)
   }
 
   const { name, questions } = questionSet
 
   const renderNormalItem = () => (
-    <QuestionSetItem title={name} onEditClicked={() => setIsEditing(true)}>
-      <PeerReviewQuestionsTable questions={questions} />
+    <QuestionSetItem
+      title={name}
+      onEditClicked={() => setIsEditing(true)}
+      collapsible
+      initiallyExpanded={expanded}
+    >
+      <div className="peer-review-question-set__view-toggle">
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={view}
+          onChange={(_event, newView) => newView && setView(newView)}
+        >
+          <ToggleButton value="table">Table</ToggleButton>
+          <ToggleButton value="preview">Preview</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      {view === 'preview' ? (
+        renderPreview(questions)
+      ) : (
+        <PeerReviewQuestionsTable questions={questions} />
+      )}
     </QuestionSetItem>
   )
 
@@ -35,7 +65,11 @@ const EditableRegistrationQuestionSet = ({ questionSet, onEditSave }) => {
       initialName={name}
       initialQuestionsJson={JSON.stringify(questions, null, 2)}
       onSave={handleEditorSave}
-      onCancel={() => setIsEditing(false)}
+      onCancel={() => {
+        setIsEditing(false)
+        setExpanded(true)
+      }}
+      renderPreview={renderPreview}
     />
   )
 
@@ -45,6 +79,7 @@ const EditableRegistrationQuestionSet = ({ questionSet, onEditSave }) => {
 EditableRegistrationQuestionSet.propTypes = {
   questionSet: peerReviewQuestionSetShape,
   onEditSave: PropTypes.func,
+  startExpanded: PropTypes.bool,
 }
 
 export default EditableRegistrationQuestionSet

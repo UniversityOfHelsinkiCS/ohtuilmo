@@ -4,7 +4,7 @@ import './PeerReviewQuestionSetList.css'
 
 const compareQuestionSetCreatedAtDesc = (a, b) => b.createdAt.localeCompare(a.createdAt)
 
-const RegistrationQuestionSetList = ({ questionSets, onQuestionSetUpdate }) => {
+const RegistrationQuestionSetList = ({ questionSets, onQuestionSetUpdate, initialIds }) => {
   const byCreatedAtDesc = [...questionSets].sort(compareQuestionSetCreatedAtDesc)
 
   return (
@@ -14,6 +14,7 @@ const RegistrationQuestionSetList = ({ questionSets, onQuestionSetUpdate }) => {
           key={set.id}
           questionSet={set}
           onEditSave={onQuestionSetUpdate}
+          startExpanded={!initialIds.has(set.id)}
         />
       ))}
     </ul>

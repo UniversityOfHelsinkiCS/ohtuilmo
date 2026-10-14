@@ -232,7 +232,7 @@ class PeerReview extends React.Component {
   }
 }
 
-const Questions = ({ questions, peers, answerSheet, updateAnswer, updatePeerReview }) => {
+export const Questions = ({ questions, peers, answerSheet, updateAnswer, updatePeerReview }) => {
   return (
     <div>
       {questions.map((question, questionId) => {

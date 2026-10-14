@@ -15,10 +15,7 @@ const createQuestionSet = (name, questions) => {
 }
 
 const editQuestionSet = (questionSetItemSelector) => {
-  cy.get(questionSetItemSelector).find('.question-set-item-controls__menu-button').click()
-  cy.get('#question-set-item-controls__menu')
-    .find('.question-set-item-controls__edit-button')
-    .click()
+  cy.get(questionSetItemSelector).find('.question-set-item-controls__edit-button').click()
 }
 
 const replaceEditingQuestionSetName = (questionSetItemSelector, newName) => {
@@ -58,6 +55,7 @@ describe('Review-questions page', () => {
   describe('Review question set creation', () => {
     beforeEach(() => {
       cy.visit('/administration/peer-review-questions')
+      cy.get('.peer-review-questions-page__create-toggle').click()
     })
 
     it('creates a new review question set', () => {
@@ -134,6 +132,7 @@ describe('Review-questions page', () => {
   describe('Review question set editing', () => {
     beforeEach(() => {
       cy.visit('/administration/peer-review-questions')
+      cy.get('.peer-review-questions-page__create-toggle').click()
     })
 
     it('does not save changes if both name and questions are empty', () => {

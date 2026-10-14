@@ -26,7 +26,13 @@ CancelButton.propTypes = {
   onClick: PropTypes.func,
 }
 
-const QuestionSetItemEditor = ({ initialName, initialQuestionsJson, onSave, onCancel }) => {
+const QuestionSetItemEditor = ({
+  initialName,
+  initialQuestionsJson,
+  onSave,
+  onCancel,
+  renderPreview,
+}) => {
   const formControls = (
     <>
       <SaveButton className="question-set-item-editor__save-button" />
@@ -42,6 +48,7 @@ const QuestionSetItemEditor = ({ initialName, initialQuestionsJson, onSave, onCa
           initialQuestionsJson={initialQuestionsJson}
           onSubmit={onSave}
           controls={formControls}
+          renderPreview={renderPreview}
         />
       </Paper>
     </div>
@@ -53,6 +60,7 @@ QuestionSetItemEditor.propTypes = {
   initialQuestionsJson: PropTypes.string,
   onSave: PropTypes.func,
   onCancel: PropTypes.func,
+  renderPreview: PropTypes.func,
 }
 
 export default QuestionSetItemEditor

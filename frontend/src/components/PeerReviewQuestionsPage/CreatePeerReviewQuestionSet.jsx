@@ -4,6 +4,7 @@ import Button from '@mui/material/Button'
 import { createPeerReviewQuestionSet } from '../../reducers/actions/peerReviewQuestionsPageActions'
 import { setError, setSuccess } from '../../reducers/actions/notificationActions'
 import QuestionSetForm from '../QuestionSetForm'
+import PeerReviewQuestionsPreview from './PeerReviewQuestionsPreview'
 
 const isValidationError = (err) => err.response && err.response.status === 400
 
@@ -36,7 +37,13 @@ const CreatePeerReviewQuestionSet = ({ onCreateRequested, onSuccess, onError }) 
     </Button>
   )
 
-  return <QuestionSetForm onSubmit={handleSubmit} controls={submitButton} />
+  return (
+    <QuestionSetForm
+      onSubmit={handleSubmit}
+      controls={submitButton}
+      renderPreview={(questions) => <PeerReviewQuestionsPreview questions={questions} />}
+    />
+  )
 }
 
 const mapDispatchToProps = {

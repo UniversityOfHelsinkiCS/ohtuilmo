@@ -14,7 +14,22 @@ const validateQuestionsJson = (str) => {
   }
 }
 
-const QuestionSetForm = ({ initialName, initialQuestionsJson, onSubmit, controls }) => {
+const parseQuestions = (str) => {
+  try {
+    const questions = JSON.parse(str)
+    return Array.isArray(questions) ? questions : null
+  } catch {
+    return null
+  }
+}
+
+const QuestionSetForm = ({
+  initialName,
+  initialQuestionsJson,
+  onSubmit,
+  controls,
+  renderPreview,
+}) => {
   const [name, setName] = useState(initialName || '')
   const [questionsJson, setQuestionsJson] = useState(initialQuestionsJson || '')
   const [questionsError, setQuestionsError] = useState('')
@@ -108,6 +123,16 @@ const QuestionSetForm = ({ initialName, initialQuestionsJson, onSubmit, controls
       `}
       />
       {controls}
+      {renderPreview && (
+        <div className="question-set-form__preview">
+          <h3>Preview</h3>
+          {parseQuestions(questionsJson) ? (
+            renderPreview(parseQuestions(questionsJson))
+          ) : (
+            <p>The preview is shown when the questions field contains a valid JSON array.</p>
+          )}
+        </div>
+      )}
     </form>
   )
 }

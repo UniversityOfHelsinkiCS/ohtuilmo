@@ -15,10 +15,7 @@ const createQuestionSet = (name, questions) => {
 }
 
 const editQuestionSet = (questionSetItemSelector) => {
-  cy.get(questionSetItemSelector).find('.question-set-item-controls__menu-button').click()
-  cy.get('#question-set-item-controls__menu')
-    .find('.question-set-item-controls__edit-button')
-    .click()
+  cy.get(questionSetItemSelector).find('.question-set-item-controls__edit-button').click()
 }
 
 const replaceEditingQuestionSetName = (questionSetItemSelector, newName) => {
