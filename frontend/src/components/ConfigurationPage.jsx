@@ -150,12 +150,15 @@ const ConfigurationPage = (props) => {
         value={props.selectedConfig ? props.selectedConfig : 'new'}
         onChange={handleConfigurationChange}
       >
-        {props.configurations.map((item) => (
-          <MenuItem key={item.id} value={item}>
-            {item.name}
-          </MenuItem>
-        ))}
         <MenuItem value="new">New</MenuItem>
+        {/* newest first, ids follow the order of creation */}
+        {[...props.configurations]
+          .sort((a, b) => b.id - a.id)
+          .map((item) => (
+            <MenuItem key={item.id} value={item}>
+              {item.name}
+            </MenuItem>
+          ))}
       </Select>
       <div>
         <TextField
