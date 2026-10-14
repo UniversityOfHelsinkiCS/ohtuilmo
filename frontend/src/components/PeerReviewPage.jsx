@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import './PeerReviewPage.css'
 import { getUser, extractCallingName } from '../utils/functions'
 import { NotInGroupPlaceholder, LoadingPlaceholder } from './common/Placeholders'
+import Markdown from './common/Markdown'
 
 // Actions
 import appActions from '../reducers/actions/appActions'
@@ -364,7 +365,9 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
     return (
       <div className="peer-review-box">
         <h3>{question.header}</h3>
-        <p className="peer-review__description">{question.description}</p>
+        <div className="peer-review__description">
+          <Markdown>{question.description}</Markdown>
+        </div>
       </div>
     )
   } else {
