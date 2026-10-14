@@ -32,17 +32,18 @@ import questionsFormPageActions from '../reducers/actions/questionsFormPageActio
 import RegistrationQuestionsTable from './RegistrationQuestionsTable'
 import PeerReviewQuestionsTable from './PeerReviewQuestionsTable'
 import PeerReviewQuestionSetView from './PeerReviewQuestionsPage/PeerReviewQuestionSetView'
+import TablePreviewToggle from './common/TablePreviewToggle'
+import RegistrationQuestionsPreview from './RegistrationQuestionsPage/RegistrationQuestionsPreview'
 
-const PeerReviewQuestionSetsLink = () => (
+const QuestionSetsLink = ({ to, pageName }) => (
   <p>
-    Question sets are created and edited on the{' '}
-    <Link to="/administration/peer-review-questions">Peer review questions</Link> page. Use Change
-    to pick the set this configuration uses.
+    Question sets are created and edited on the <Link to={to}>{pageName}</Link> page. Use Change to
+    pick the set this configuration uses.
   </p>
 )
 
 // the dropdown is shown only after the user presses change
-const ReviewQuestionSetPicker = ({ round, selected, questionSets, onChange }) => {
+const QuestionSetPicker = ({ name, dataCy, placeholder, selected, questionSets, onChange }) => {
   const [open, setOpen] = useState(false)
 
   const handleChange = (event) => {
@@ -57,24 +58,24 @@ const ReviewQuestionSetPicker = ({ round, selected, questionSets, onChange }) =>
       </span>
       {open && (
         <Select
-          data-cy={`select-review-questions-${round}`}
-          name={`review${round}`}
+          data-cy={`select-${dataCy}`}
+          name={name}
           value={selected ? selected.id : 'default'}
           onChange={handleChange}
           size="small"
         >
           <MenuItem value="default" disabled>
-            Pick review {round} questions
+            {placeholder}
           </MenuItem>
           {questionSets.map((item) => (
-            <MenuItem key={item.id} value={item.id} data-cy={`menu-item-review-questions-${round}`}>
+            <MenuItem key={item.id} value={item.id} data-cy={`menu-item-${dataCy}`}>
               {item.name}
             </MenuItem>
           ))}
         </Select>
       )}
       <Button
-        data-cy={`change-review-questions-${round}`}
+        data-cy={`change-${dataCy}`}
         variant="outlined"
         size="small"
         onClick={() => setOpen(!open)}
@@ -217,10 +218,6 @@ const ConfigurationPage = (props) => {
     }
   }
 
-  const goToAddRegistrationQuestions = () => {
-    props.history.push('/administration/registration-questions')
-  }
-
   const goToAddCustomerReviewQuestions = () => {
     props.history.push('/administration/customer-review-questions')
   }
@@ -270,35 +267,30 @@ const ConfigurationPage = (props) => {
           <AccordionDetails>
             <div>
               <Divider />
+              <QuestionSetsLink
+                to="/administration/registration-questions"
+                pageName="Registration questions"
+              />
+              <QuestionSetPicker
+                name="registration"
+                dataCy="registration-questions"
+                placeholder="Pick registration questions"
+                selected={props.selectedRegister}
+                questionSets={props.allRegistrationQuestions}
+                onChange={handleQuestionSetChange}
+              />
               {props.selectedRegister && (
-                <RegistrationQuestionsTable questions={props.selectedRegister.questions} />
+                <TablePreviewToggle
+                  table={
+                    <RegistrationQuestionsTable questions={props.selectedRegister.questions} />
+                  }
+                  preview={
+                    <RegistrationQuestionsPreview questions={props.selectedRegister.questions} />
+                  }
+                />
               )}
             </div>
           </AccordionDetails>
-          <AccordionActions>
-            <Select
-              name="registration"
-              value={props.selectedRegister ? props.selectedRegister.id : 'default'}
-              onChange={handleQuestionSetChange}
-            >
-              <MenuItem value="default" disabled>
-                Pick registration questions
-              </MenuItem>
-              {props.allRegistrationQuestions.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button
-              style={{ marginRight: '10px', height: '40px' }}
-              color="primary"
-              variant="contained"
-              onClick={goToAddRegistrationQuestions}
-            >
-              Configure
-            </Button>
-          </AccordionActions>
         </Accordion>
         <Accordion data-cy="expansion-review-questions-1">
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -317,9 +309,14 @@ const ConfigurationPage = (props) => {
           <AccordionDetails>
             <div>
               <Divider />
-              <PeerReviewQuestionSetsLink />
-              <ReviewQuestionSetPicker
-                round={1}
+              <QuestionSetsLink
+                to="/administration/peer-review-questions"
+                pageName="Peer review questions"
+              />
+              <QuestionSetPicker
+                name="review1"
+                dataCy="review-questions-1"
+                placeholder="Pick review 1 questions"
                 selected={props.selectedReview1}
                 questionSets={props.allReviewQuestions}
                 onChange={handleQuestionSetChange}
@@ -347,9 +344,14 @@ const ConfigurationPage = (props) => {
           <AccordionDetails>
             <div>
               <Divider />
-              <PeerReviewQuestionSetsLink />
-              <ReviewQuestionSetPicker
-                round={2}
+              <QuestionSetsLink
+                to="/administration/peer-review-questions"
+                pageName="Peer review questions"
+              />
+              <QuestionSetPicker
+                name="review2"
+                dataCy="review-questions-2"
+                placeholder="Pick review 2 questions"
                 selected={props.selectedReview2}
                 questionSets={props.allReviewQuestions}
                 onChange={handleQuestionSetChange}

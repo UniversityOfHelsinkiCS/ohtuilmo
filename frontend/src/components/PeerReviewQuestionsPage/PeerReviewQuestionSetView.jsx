@@ -1,37 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
+import TablePreviewToggle from '../common/TablePreviewToggle'
 import PeerReviewQuestionsTable from '../PeerReviewQuestionsTable'
 import PeerReviewQuestionsPreview from './PeerReviewQuestionsPreview'
 import './PeerReviewQuestionSetView.css'
 
 // shows the questions of a set either as a table or as students see them
-const PeerReviewQuestionSetView = ({ questions }) => {
-  const [view, setView] = useState('table')
-
-  return (
-    <div>
-      <div className="peer-review-question-set__view-toggle">
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={view}
-          onChange={(_event, newView) => newView && setView(newView)}
-        >
-          <ToggleButton value="table">Table</ToggleButton>
-          <ToggleButton value="preview">Preview</ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      {view === 'preview' ? (
-        <PeerReviewQuestionsPreview questions={questions} />
-      ) : (
-        <PeerReviewQuestionsTable questions={questions} />
-      )}
-    </div>
-  )
-}
+const PeerReviewQuestionSetView = ({ questions }) => (
+  <TablePreviewToggle
+    table={<PeerReviewQuestionsTable questions={questions} />}
+    preview={<PeerReviewQuestionsPreview questions={questions} />}
+  />
+)
 
 PeerReviewQuestionSetView.propTypes = {
   questions: PropTypes.array.isRequired,

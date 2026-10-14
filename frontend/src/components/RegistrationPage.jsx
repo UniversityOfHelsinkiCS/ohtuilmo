@@ -3,12 +3,7 @@ import React from 'react'
 
 import { connect } from 'react-redux'
 // MUI
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
-import Input from '@mui/material/Input'
-import Select from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 // services
 import topicService from '../services/topic'
@@ -26,6 +21,7 @@ import * as notificationActions from '../reducers/actions/notificationActions'
 import registrationActions from '../reducers/actions/registrationActions'
 import registrationmanagementActions from '../reducers/actions/registrationManagementActions'
 import SortableTopicList from './SortableTopicList'
+import RegistrationQuestion from './RegistrationQuestion'
 
 const Prerequisites = ({ checkbox1, checkbox2, checkbox3, onToggle1, onToggle2, onToggle3 }) => {
   return (
@@ -265,44 +261,12 @@ class RegistrationPage extends React.Component {
     }
 
     const questions = this.props.questions.map((item, idx) => (
-      <Card style={{ marginBottom: '10px' }} key={idx}>
-        <CardContent>
-          <p>{item.question}</p>
-          {item.type === 'scale' ? (
-            <div>
-              <Select
-                value={
-                  this.props.questions[idx].answer === undefined
-                    ? -1
-                    : this.props.questions[idx].answer
-                }
-                onChange={(event) => this.props.updateQuestionAnswer(event.target.value, idx)}
-              >
-                <MenuItem value={-1} disabled>
-                  <em>Pick a number</em>
-                </MenuItem>
-                <MenuItem value={0}>0</MenuItem>
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-                <MenuItem value={4}>4</MenuItem>
-                <MenuItem value={5}>5</MenuItem>
-              </Select>
-            </div>
-          ) : null}
-          {item.type === 'text' ? (
-            <Input
-              value={this.props.questions[idx].answer}
-              onChange={(event) => this.props.updateQuestionAnswer(event.target.value, idx)}
-              placeholder="Answer"
-              fullWidth
-              multiline
-              maxRows="3"
-              required
-            />
-          ) : null}
-        </CardContent>
-      </Card>
+      <RegistrationQuestion
+        key={idx}
+        question={item}
+        answer={item.answer}
+        onAnswerChange={(answer) => this.props.updateQuestionAnswer(answer, idx)}
+      />
     ))
 
     return (
