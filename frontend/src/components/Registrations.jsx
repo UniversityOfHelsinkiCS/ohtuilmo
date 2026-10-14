@@ -106,7 +106,7 @@ const Registrations = () => {
             <TableCell>{reg.student_number}</TableCell>
             <TableCell>{reg.email}</TableCell>
             {preferred_of(reg)}
-            <TableCell>{reg.questions[0].answer}</TableCell>
+            <TableCell>{reg.questions[0]?.answer}</TableCell>
           </TableRow>
         ))}
       </Table>
