@@ -38,6 +38,7 @@ const InstructorTimeLogsPage = (props) => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [allConfigurations, setAllConfigurations] = useState([])
+  const [currentConfigurationId, setCurrentConfigurationId] = useState(null)
   const [selectedConfigurationId, setSelectedConfigurationId] = useState(
     () => Number(searchParams.get('configuration')) || 0,
   )
@@ -80,6 +81,7 @@ const InstructorTimeLogsPage = (props) => {
           if (b.id === currentConfigurationId) return 1
           return b.id - a.id
         })
+        setCurrentConfigurationId(currentConfigurationId)
         setAllConfigurations(sortedConfigurations)
       } catch (error) {
         console.error('Error fetching groups:', error.message, ' / ', error.response.data.error)
@@ -146,15 +148,21 @@ const InstructorTimeLogsPage = (props) => {
 
       const allGroupsInSortedOrder = [...allGroups] // clones the array
       allGroupsInSortedOrder.sort((a, b) => a.id - b.id)
-      const newestGroupByInstructor = allGroupsInSortedOrder.findLast(
+      const groupsByInstructor = allGroupsInSortedOrder.filter(
         (group) => group.instructorId === user.user.student_number,
       )
-      const configurationByInstructor = allConfigurations.find(
-        (configuration) => newestGroupByInstructor?.configurationId === configuration.id,
+      // default to the current teaching period, otherwise to the newest instructed group
+      const currentConfiguration = allConfigurations.find(
+        (configuration) => configuration.id === currentConfigurationId,
       )
-      setSelectedConfigurationId(configurationByInstructor?.id ?? 0)
-      setSelectedGroupId(newestGroupByInstructor?.id ?? 0)
-      setSelectedGroup(newestGroupByInstructor?.id ? newestGroupByInstructor : null)
+      const defaultConfigurationId =
+        currentConfiguration?.id ?? groupsByInstructor.at(-1)?.configurationId ?? 0
+      const defaultGroup = groupsByInstructor.findLast(
+        (group) => group.configurationId === defaultConfigurationId,
+      )
+      setSelectedConfigurationId(defaultConfigurationId)
+      setSelectedGroupId(defaultGroup?.id ?? 0)
+      setSelectedGroup(defaultGroup ?? null)
       setSelectedStudentNumber(0)
       setSelectionInitialized(true)
     }
