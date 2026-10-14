@@ -61,39 +61,42 @@ const QuestionSetForm = ({
     setQuestionsJson('')
   }
 
+  // the preview is kept outside of the form, so that its inputs (some of them
+  // required) do not take part in validating and submitting the form
   return (
-    <form className="question-set-form" onSubmit={handleFormSubmit}>
-      <TextField
-        className="question-set-form__name"
-        fullWidth
-        required
-        label="Name"
-        margin="normal"
-        value={name}
-        onChange={handleNameChange}
-      />
-      <TextField
-        className="question-set-form__questions"
-        error={!!questionsError}
-        slotProps={{
-          inputLabel: { shrink: true },
-          htmlInput: {
-            style: {
-              fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
-              fontSize: '0.9em',
+    <>
+      <form className="question-set-form" onSubmit={handleFormSubmit}>
+        <TextField
+          className="question-set-form__name"
+          fullWidth
+          required
+          label="Name"
+          margin="normal"
+          value={name}
+          onChange={handleNameChange}
+        />
+        <TextField
+          className="question-set-form__questions"
+          error={!!questionsError}
+          slotProps={{
+            inputLabel: { shrink: true },
+            htmlInput: {
+              style: {
+                fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace',
+                fontSize: '0.9em',
+              },
             },
-          },
-        }}
-        fullWidth
-        required
-        label="Questions (JSON)"
-        helperText={questionsError || ''}
-        margin="normal"
-        multiline
-        rows={28}
-        value={questionsJson}
-        onChange={handleQuestionsChange}
-        placeholder={`
+          }}
+          fullWidth
+          required
+          label="Questions (JSON)"
+          helperText={questionsError || ''}
+          margin="normal"
+          multiline
+          rows={28}
+          value={questionsJson}
+          onChange={handleQuestionsChange}
+          placeholder={`
         Available question types:
         
         - number
@@ -121,8 +124,9 @@ const QuestionSetForm = ({
           }
         ]
       `}
-      />
-      {controls}
+        />
+        {controls}
+      </form>
       {renderPreview && (
         <div className="question-set-form__preview">
           <h3>Preview</h3>
@@ -133,7 +137,7 @@ const QuestionSetForm = ({
           )}
         </div>
       )}
-    </form>
+    </>
   )
 }
 
