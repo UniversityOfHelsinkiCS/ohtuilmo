@@ -5,29 +5,3 @@
 .peer-review-questions-page__create-form {
   padding: 0.5rem 1rem 1rem 1rem;
 }
-
-.question-set-form__preview {
-  margin-top: 2rem;
-}
-
-.peer-review-questions-page__create-toggle {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.peer-review-questions-page__create-toggle-icon {
-  transform: rotate(-90deg);
-  transition: transform 150ms;
-}
-
-.peer-review-questions-page__create-toggle-icon--open {
-  transform: none;
-}

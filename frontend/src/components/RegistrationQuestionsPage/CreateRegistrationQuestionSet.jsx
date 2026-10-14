@@ -4,6 +4,7 @@ import Button from '@mui/material/Button'
 import { createRegistrationQuestionSet } from '../../reducers/actions/registrationQuestionsPageActions'
 import { setError, setSuccess } from '../../reducers/actions/notificationActions'
 import QuestionSetForm from '../QuestionSetForm'
+import RegistrationQuestionsPreview from './RegistrationQuestionsPreview'
 
 const isValidationError = (err) => err.response && err.response.status === 400
 
@@ -33,7 +34,13 @@ const CreateRegistrationQuestionSet = ({ onCreateRequested, onSuccess, onError }
     </Button>
   )
 
-  return <QuestionSetForm onSubmit={handleSubmit} controls={submitButton} />
+  return (
+    <QuestionSetForm
+      onSubmit={handleSubmit}
+      controls={submitButton}
+      renderPreview={(questions) => <RegistrationQuestionsPreview questions={questions} />}
+    />
+  )
 }
 
 const mapDispatchToProps = {

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 import Paper from '@mui/material/Paper'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import CollapsibleHeading from '../common/CollapsibleHeading'
 
 import {
   fetchPeerReviewQuestionSets,
@@ -73,19 +73,12 @@ class PeerReviewQuestionsPage extends React.Component {
         <h1>Configure peer review questions</h1>
         <div className="peer-review-questions-page__container">
           <section style={{ marginBottom: '2rem' }}>
-            <h2 className="peer-review-questions-page__create-title">
-              <button
-                type="button"
-                className="peer-review-questions-page__create-toggle"
-                aria-expanded={createFormOpen}
-                onClick={() => this.setState({ createFormOpen: !createFormOpen })}
-              >
-                <ExpandMoreIcon
-                  className={`peer-review-questions-page__create-toggle-icon${createFormOpen ? ' peer-review-questions-page__create-toggle-icon--open' : ''}`}
-                />
-                Create question set
-              </button>
-            </h2>
+            <CollapsibleHeading
+              title="Create question set"
+              open={createFormOpen}
+              onToggle={() => this.setState({ createFormOpen: !createFormOpen })}
+              toggleClassName="peer-review-questions-page__create-toggle"
+            />
             {createFormOpen && (
               <Paper depth={1} className="peer-review-questions-page__create-form">
                 <CreatePeerReviewQuestionSet />

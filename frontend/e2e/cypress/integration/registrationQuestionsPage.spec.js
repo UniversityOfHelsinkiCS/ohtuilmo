@@ -55,6 +55,7 @@ describe('Registration-questions page', () => {
   describe('Registration question set creation', () => {
     beforeEach(() => {
       cy.visit('/administration/registration-questions')
+      cy.get('.registration-questions-page__create-toggle').click()
     })
 
     it('creates a new registration question set', () => {
@@ -114,6 +115,7 @@ describe('Registration-questions page', () => {
     beforeEach(() => {
       cy.createRegistrationQuestionSet('k2000', [{ question: 'foo?', type: 'text' }])
       cy.visit('/administration/registration-questions')
+      cy.get('.registration-questions-page__create-toggle').click()
     })
 
     it('does not save changes if both name and questions are empty', () => {

@@ -1,0 +1,21 @@
+.collapsible-heading__toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.collapsible-heading__icon {
+  transform: rotate(-90deg);
+  transition: transform 150ms;
+}
+
+.collapsible-heading__icon--open {
+  transform: none;
+}
