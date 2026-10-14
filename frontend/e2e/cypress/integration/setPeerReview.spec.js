@@ -41,12 +41,14 @@ describe('Review-questions page', () => {
   })
   it('new review question set is visible for round 1', () => {
     cy.get('[data-cy=expansion-review-questions-1]').click()
+    cy.get('[data-cy=change-review-questions-1]').click()
     cy.get('[data-cy=select-review-questions-1]').click()
     cy.get('[data-cy=menu-item-review-questions-1]').click()
     cy.get('.admin-page-container').contains('Super nice review questions')
   })
   it('new review question is shown when it is selected', () => {
     cy.get('[data-cy=expansion-review-questions-1]').click()
+    cy.get('[data-cy=change-review-questions-1]').click()
     cy.get('[data-cy=select-review-questions-1]').click()
     cy.get('[data-cy=menu-item-review-questions-1]').click()
     cy.get('.admin-page-container').contains('This is info')

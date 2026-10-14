@@ -1,6 +1,7 @@
 import { withRouter } from '../utils/withRouter'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import './TopicFormPage.css'
 
@@ -30,6 +31,59 @@ import questionsFormPageActions from '../reducers/actions/questionsFormPageActio
 
 import RegistrationQuestionsTable from './RegistrationQuestionsTable'
 import PeerReviewQuestionsTable from './PeerReviewQuestionsTable'
+import PeerReviewQuestionSetView from './PeerReviewQuestionsPage/PeerReviewQuestionSetView'
+
+const PeerReviewQuestionSetsLink = () => (
+  <p>
+    Question sets are created and edited on the{' '}
+    <Link to="/administration/peer-review-questions">Peer review questions</Link> page. Use Change
+    to pick the set this configuration uses.
+  </p>
+)
+
+// the dropdown is shown only after the user presses change
+const ReviewQuestionSetPicker = ({ round, selected, questionSets, onChange }) => {
+  const [open, setOpen] = useState(false)
+
+  const handleChange = (event) => {
+    onChange(event)
+    setOpen(false)
+  }
+
+  return (
+    <div className="configuration-page__set-picker">
+      <span>
+        Selected set: <strong>{selected ? selected.name : 'none'}</strong>
+      </span>
+      {open && (
+        <Select
+          data-cy={`select-review-questions-${round}`}
+          name={`review${round}`}
+          value={selected ? selected.id : 'default'}
+          onChange={handleChange}
+          size="small"
+        >
+          <MenuItem value="default" disabled>
+            Pick review {round} questions
+          </MenuItem>
+          {questionSets.map((item) => (
+            <MenuItem key={item.id} value={item.id} data-cy={`menu-item-review-questions-${round}`}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </Select>
+      )}
+      <Button
+        data-cy={`change-review-questions-${round}`}
+        variant="outlined"
+        size="small"
+        onClick={() => setOpen(!open)}
+      >
+        {open ? 'Cancel' : 'Change'}
+      </Button>
+    </div>
+  )
+}
 
 const SelectedSetName = ({ questionSet }) => (
   <p
@@ -167,10 +221,6 @@ const ConfigurationPage = (props) => {
     props.history.push('/administration/registration-questions')
   }
 
-  const goToAddReviewQuestions = () => {
-    props.history.push('/administration/peer-review-questions')
-  }
-
   const goToAddCustomerReviewQuestions = () => {
     props.history.push('/administration/customer-review-questions')
   }
@@ -267,36 +317,18 @@ const ConfigurationPage = (props) => {
           <AccordionDetails>
             <div>
               <Divider />
+              <PeerReviewQuestionSetsLink />
+              <ReviewQuestionSetPicker
+                round={1}
+                selected={props.selectedReview1}
+                questionSets={props.allReviewQuestions}
+                onChange={handleQuestionSetChange}
+              />
               {props.selectedReview1 && (
-                <PeerReviewQuestionsTable questions={props.selectedReview1.questions} />
+                <PeerReviewQuestionSetView questions={props.selectedReview1.questions} />
               )}
             </div>
           </AccordionDetails>
-          <AccordionActions>
-            <Select
-              data-cy="select-review-questions-1"
-              name="review1"
-              value={props.selectedReview1 ? props.selectedReview1.id : 'default'}
-              onChange={handleQuestionSetChange}
-            >
-              <MenuItem value="default" disabled>
-                Pick review 1 questions
-              </MenuItem>
-              {props.allReviewQuestions.map((item) => (
-                <MenuItem key={item.id} value={item.id} data-cy="menu-item-review-questions-1">
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button
-              style={{ marginRight: '10px', height: '40px' }}
-              color="primary"
-              variant="contained"
-              onClick={goToAddReviewQuestions}
-            >
-              Configure
-            </Button>
-          </AccordionActions>
         </Accordion>
         <Accordion data-cy="expansion-review-questions-2">
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -315,35 +347,18 @@ const ConfigurationPage = (props) => {
           <AccordionDetails>
             <div>
               <Divider />
+              <PeerReviewQuestionSetsLink />
+              <ReviewQuestionSetPicker
+                round={2}
+                selected={props.selectedReview2}
+                questionSets={props.allReviewQuestions}
+                onChange={handleQuestionSetChange}
+              />
               {props.selectedReview2 && (
-                <PeerReviewQuestionsTable questions={props.selectedReview2.questions} />
+                <PeerReviewQuestionSetView questions={props.selectedReview2.questions} />
               )}
             </div>
           </AccordionDetails>
-          <AccordionActions>
-            <Select
-              name="review2"
-              value={props.selectedReview2 ? props.selectedReview2.id : 'default'}
-              onChange={handleQuestionSetChange}
-            >
-              <MenuItem value="default" disabled>
-                Pick review 2 questions
-              </MenuItem>
-              {props.allReviewQuestions.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button
-              style={{ marginRight: '10px', height: '40px' }}
-              color="primary"
-              variant="contained"
-              onClick={goToAddReviewQuestions}
-            >
-              Configure
-            </Button>
-          </AccordionActions>
         </Accordion>
         <Accordion data-cy="expansion-customer-review-questions">
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
