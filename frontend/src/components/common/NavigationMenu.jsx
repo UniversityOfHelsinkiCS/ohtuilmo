@@ -6,6 +6,7 @@ import Paper from '@mui/material/Paper'
 import Popper from '@mui/material/Popper'
 import MenuItem from '@mui/material/MenuItem'
 import MenuList from '@mui/material/MenuList'
+import Tooltip from '@mui/material/Tooltip'
 import ListSubheader from '@mui/material/ListSubheader'
 import MenuIcon from '@mui/icons-material/Menu'
 import './NavigationBar.css'
@@ -50,13 +51,16 @@ class NavigationMenu extends React.Component {
           )
         } else {
           return (
-            <MenuItem
-              className={item.className}
-              onClick={() => this.handleItemClick(item)}
+            <Tooltip
               key={item.text}
+              title={item.description ?? ''}
+              placement="right"
+              enterDelay={400}
             >
-              {item.text}
-            </MenuItem>
+              <MenuItem className={item.className} onClick={() => this.handleItemClick(item)}>
+                {item.text}
+              </MenuItem>
+            </Tooltip>
           )
         }
       })
