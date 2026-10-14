@@ -16,7 +16,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
-import { TEST_USER, TEST_USER2, TEST_ADMIN, TEST_USER3 } from '../common'
+import { TEST_USER, TEST_USER2, TEST_ADMIN, TEST_USER3, TEST_INSTRUCTOR } from '../common'
 
 const postLogin = (user) => {
   const { headers } = user
@@ -30,8 +30,18 @@ const postLogin = (user) => {
 const loginAsUser = (user) => {
   postLogin(user).then((res) => {
     const userData = res.body
-    cy.window().then((win) => {
-      win.localStorage.setItem('loggedInUser', JSON.stringify(userData))
+    // the app checks the instructor role after logging in, do the same here
+    cy.request({
+      url: '/api/users/isInstructor',
+      headers: { Authorization: 'Bearer ' + userData.token },
+    }).then((instructorRes) => {
+      const loggedInUser = {
+        ...userData,
+        user: { ...userData.user, instructor: instructorRes.body.isInstructor },
+      }
+      cy.window().then((win) => {
+        win.localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser))
+      })
     })
   })
 }
@@ -50,6 +60,27 @@ Cypress.Commands.add('loginAsAdmin', () => {
 
 Cypress.Commands.add('loginAsRegisteredIndicatedUser', () => {
   loginAsUser(TEST_USER3)
+})
+
+Cypress.Commands.add('loginAs', (user) => {
+  loginAsUser(user)
+})
+
+Cypress.Commands.add('loginAsInstructor', () => {
+  loginAsUser(TEST_INSTRUCTOR)
+})
+
+// makes an API request as the given user (or anonymously when user is null)
+// without failing the test on error statuses, for testing access control
+Cypress.Commands.add('requestAs', (user, options) => {
+  const token = user ? postLogin(user).its('body.token') : cy.wrap(null)
+  return token.then((t) =>
+    cy.request({
+      ...options,
+      failOnStatusCode: false,
+      headers: t ? { Authorization: 'Bearer ' + t } : {},
+    }),
+  )
 })
 
 Cypress.Commands.add('logout', () => {
@@ -570,81 +601,6 @@ Cypress.Commands.add('deleteConfiguration', (configurationId) => {
     }
     cy.request({
       url: `/api/configurations/${configurationId}`,
-      method: 'DELETE',
-      headers: authHeaders,
-    })
-  })
-})
-
-Cypress.Commands.add('deleteCustomerReview', (customerReviewId) => {
-  withLoggedAdminTokenSuperHack().then((token) => {
-    const authHeaders = {
-      Authorization: 'Bearer ' + token,
-    }
-    cy.request({
-      url: `/api/customerreviews/delete/${customerReviewId}`,
-      method: 'DELETE',
-      headers: authHeaders,
-    })
-  })
-})
-
-Cypress.Commands.add('createCustomerReview', (customerReview) => {
-  withLoggedAdminTokenSuperHack().then((token) => {
-    const authHeaders = {
-      Authorization: 'Bearer ' + token,
-    }
-    //const { answerSheet, group_id, topic_id, configuration_id } = customerReview
-    cy.request({
-      url: '/api/customerReview',
-      method: 'POST',
-      headers: authHeaders,
-      body: {
-        customerReview,
-      },
-    })
-  })
-})
-
-Cypress.Commands.add('createGroupHack', (groupData) => {
-  return withLoggedAdminTokenSuperHack().then((token) => {
-    const authHeaders = {
-      Authorization: 'Bearer ' + token,
-    }
-    const {
-      name,
-      topicId,
-      configurationId,
-      instructorId,
-      isShortProject = false,
-      studentIds,
-    } = groupData
-
-    return cy
-      .request({
-        url: '/api/groups',
-        method: 'POST',
-        headers: authHeaders,
-        body: {
-          name,
-          topicId,
-          configurationId,
-          instructorId,
-          isShortProject,
-          studentIds,
-        },
-      })
-      .then((res) => res.body)
-  })
-})
-
-Cypress.Commands.add('deleteCustomerReview', (customerReviewId) => {
-  withLoggedAdminToken().then((token) => {
-    const authHeaders = {
-      Authorization: 'Bearer ' + token,
-    }
-    cy.request({
-      url: `/api/customerreviews/delete/${customerReviewId}`,
       method: 'DELETE',
       headers: authHeaders,
     })

@@ -349,12 +349,12 @@ describe('Instructor page', () => {
     cy.get('[data-cy=group-selector]').click()
     cy.get('.specified-group-menu-item').contains('Tykittelijät').click()
     cy.contains('Tykittelijät')
-    cy.should('not.contain', 'Kakkostykitys')
+    cy.get('body').should('not.contain', 'Kakkostykitys')
 
     cy.get('[data-cy=group-selector]').click()
     cy.get('.specified-group-menu-item').contains('Kakkostykitys').click()
     cy.contains('Kakkostykitys')
-    cy.should('not.contain', 'Tykittelijät')
+    cy.get('body').should('not.contain', 'Tykittelijät')
   })
 
   it('can toggle between student and question views', () => {

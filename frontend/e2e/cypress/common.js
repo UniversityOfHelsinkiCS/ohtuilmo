@@ -45,3 +45,27 @@ export const TEST_ADMIN = {
     sn: 'Merkel',
   },
 }
+
+// instructors get the instructor role when they instruct a group of an active
+// configuration, tests create such groups for them
+export const TEST_INSTRUCTOR = {
+  username: 'instructortester',
+  headers: {
+    uid: 'instructortester',
+    givenname: 'Irma',
+    mail: '',
+    hypersonstudentid: '012345111',
+    sn: 'Ohjaaja',
+  },
+}
+
+export const TEST_INSTRUCTOR2 = {
+  username: 'instructortester2',
+  headers: {
+    uid: 'instructortester2',
+    givenname: 'Olli',
+    mail: '',
+    hypersonstudentid: '012345222',
+    sn: 'Toinenohjaaja',
+  },
+}
