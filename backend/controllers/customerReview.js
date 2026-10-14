@@ -1,6 +1,6 @@
 const customerReviewRouter = require('express').Router()
 const db = require('../models/index')
-const { checkAdmin } = require('../middleware')
+const { checkAdmin, optionalLogin } = require('../middleware')
 
 const handleDatabaseError = (res, error) => {
   console.log(error)
@@ -88,8 +88,7 @@ const validateRangeAnswer = (question) => {
   return null
 }
 
-const create = async (req, res) => {
-  const { customerReview } = req.body
+const create = async (req, res, customerReview) => {
   try {
     const sentAnswerSheet = await db.CustomerReview.create(customerReview)
     return res.status(201).json(sentAnswerSheet)
@@ -98,7 +97,9 @@ const create = async (req, res) => {
   }
 }
 
-customerReviewRouter.post('/', async (req, res) => {
+// customers send the review with the secret id of their topic, the group is
+// resolved from it so that a review can not be sent for some other group
+customerReviewRouter.post('/', optionalLogin, async (req, res) => {
   const { customerReview } = req.body
 
   const error = validateAnswerSheet(customerReview)
@@ -106,7 +107,37 @@ customerReviewRouter.post('/', async (req, res) => {
   if (error) {
     return res.status(400).json({ error })
   }
-  create(req, res)
+
+  if (req.user && req.user.admin) {
+    return create(req, res, customerReview)
+  }
+
+  try {
+    const topic = customerReview.secret_id
+      ? await db.Topic.findOne({ where: { secret_id: customerReview.secret_id } })
+      : null
+    if (!topic) {
+      return res.status(401).json({ error: 'Invalid review link' })
+    }
+
+    const group = await db.Group.findOne({ where: { topicId: topic.id } })
+    if (!group) {
+      return res.status(400).json({ error: 'No group for this topic' })
+    }
+
+    if (await hasCustomerAlreadyAnswered(group.id)) {
+      return res.status(400).json({ error: 'This group has already been reviewed' })
+    }
+
+    return create(req, res, {
+      answer_sheet: customerReview.answer_sheet,
+      group_id: group.id,
+      topic_id: topic.id,
+      configuration_id: group.configurationId,
+    })
+  } catch (err) {
+    return handleDatabaseError(res, err)
+  }
 })
 
 customerReviewRouter.get('/', checkAdmin, async (req, res) => {
@@ -129,7 +160,10 @@ customerReviewRouter.get('/all', checkAdmin, async (req, res) => {
     })
 
     const connectAnswerToGroup = (answers, group) => {
-      const connectedAnswers = answers.filter((answer) => answer.group.id === group.id)
+      // reviews of deleted groups have no group
+      const connectedAnswers = answers.filter(
+        (answer) => answer.group && answer.group.id === group.id,
+      )
       if (connectedAnswers.length < 1) {
         return null
       }
@@ -172,7 +206,10 @@ customerReviewRouter.get('/all/forconfiguration/:id', checkAdmin, async (req, re
     })
 
     const connectAnswerToGroup = (answers, group) => {
-      const connectedAnswers = answers.filter((answer) => answer.group.id === group.id)
+      // reviews of deleted groups have no group
+      const connectedAnswers = answers.filter(
+        (answer) => answer.group && answer.group.id === group.id,
+      )
       if (connectedAnswers.length < 1) {
         return null
       }

@@ -41,7 +41,7 @@ const registrationCheck = async (req, res, next) => {
   }
 }
 
-topicsRouter.post('/:id/copy', async (req, res) => {
+topicsRouter.post('/:id/copy', checkAdmin, async (req, res) => {
   const conf = await db.RegistrationManagement.findOne({
     order: [['createdAt', 'DESC']],
   })

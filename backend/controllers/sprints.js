@@ -169,7 +169,9 @@ sprintsRouter.get('/sprintsByGroup/:group_id', checkInstructor, async (req, res)
 })
 
 sprintsRouter.post('/', checkLogin, async (req, res) => {
-  const { start_date, end_date, sprint, user_id } = req.body
+  const { start_date, end_date, sprint } = req.body
+  // the sprint is always created for the group of the logged in user
+  const user_id = req.user.id
 
   try {
     const groupId = await findLatestGroupId(user_id)

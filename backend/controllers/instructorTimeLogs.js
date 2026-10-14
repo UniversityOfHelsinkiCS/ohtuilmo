@@ -71,6 +71,13 @@ instructorTimeLogsRouter.get('/', checkInstructor, async (req, res) => {
   }
 })
 
+// only admins and the instructor of the group may change the time logs of a group
+const canManageSprint = async (user, sprint) => {
+  if (user.admin) return true
+  const group = await db.Group.findByPk(sprint.group_id)
+  return !!group && group.instructorId === user.id
+}
+
 const moveTimeLogToSprint = (direction) => async (req, res) => {
   const id = parseInt(req.params.id)
   try {
@@ -78,11 +85,14 @@ const moveTimeLogToSprint = (direction) => async (req, res) => {
       where: { id: id },
     })
     if (!timeLog) {
-      res.status(404).json({ error: 'Time log not found or unauthorized to move' })
+      return res.status(404).json({ error: 'Time log not found or unauthorized to move' })
     }
     const currentSprint = await db.Sprint.findOne({
       where: { id: timeLog.sprint_id },
     })
+    if (!(await canManageSprint(req.user, currentSprint))) {
+      return res.status(403).json({ error: 'You are not the instructor of this group' })
+    }
     const previousSprint = await db.Sprint.findOne({
       where: { sprint: currentSprint.sprint - 1, group_id: currentSprint.group_id },
     })
@@ -91,16 +101,16 @@ const moveTimeLogToSprint = (direction) => async (req, res) => {
     })
     if (direction === 'previous') {
       if (!previousSprint) {
-        res.status(404).json({ error: 'Previous sprint not found' })
+        return res.status(404).json({ error: 'Previous sprint not found' })
       }
       timeLog.sprint_id = previousSprint.id
     } else if (direction === 'next') {
       if (!nextSprint) {
-        res.status(404).json({ error: 'Next sprint not found' })
+        return res.status(404).json({ error: 'Next sprint not found' })
       }
       timeLog.sprint_id = nextSprint.id
     } else {
-      res.status(400).json({ error: 'Invalid direction' })
+      return res.status(400).json({ error: 'Invalid direction' })
     }
     await timeLog.save()
     const timeLogs = await fetchAllFromDb()
@@ -124,7 +134,11 @@ instructorTimeLogsRouter.delete('/:id', checkInstructor, async (req, res) => {
       where: { id: id },
     })
     if (!timeLog) {
-      res.status(404).json({ error: 'Time log not found' })
+      return res.status(404).json({ error: 'Time log not found' })
+    }
+    const sprint = await db.Sprint.findByPk(timeLog.sprint_id)
+    if (!(await canManageSprint(req.user, sprint))) {
+      return res.status(403).json({ error: 'You are not the instructor of this group' })
     }
     await db.TimeLog.destroy({ where: { id: id } })
     const timeLogs = await fetchAllFromDb()

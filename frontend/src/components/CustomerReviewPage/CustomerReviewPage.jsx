@@ -234,6 +234,7 @@ const CustomerReviewPage = (props) => {
           group_id: props.groupId,
           topic_id: props.topicId,
           configuration_id: props.configuration,
+          secret_id: props.match.params.id,
         },
       })
 

@@ -10,7 +10,10 @@ const create = async (content) => {
 }
 
 const copy = async (id) => {
-  const response = await axios.post(url + '/' + id + '/copy')
+  const config = {
+    headers: { Authorization: 'bearer ' + getUserToken() },
+  }
+  const response = await axios.post(url + '/' + id + '/copy', null, config)
   return response.data.topic
 }
 
