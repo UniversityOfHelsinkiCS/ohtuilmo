@@ -13,41 +13,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Read backend node version from package.json
-        uses: skjnldsv/read-package-engines-version-actions@v3
-        with:
-          path: ./backend/
-        id: backend-engines
-
+      - uses: actions/checkout@v7
       - name: Setup Node.js for backend
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ steps.backend-engines.outputs.nodeVersion }}
+          node-version: 24
 
       - name: Install backend dependencies, lint & format
         working-directory: ./backend
         run: |
-          npm install
+          npm ci
           npm run lint
           npm run format:check
 
-      - name: Read frontend node version from package.json
-        uses: skjnldsv/read-package-engines-version-actions@v3
-        with:
-          path: ./frontend/
-        id: frontend-engines
-
       - name: Setup Node.js for frontend
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ steps.frontend-engines.outputs.nodeVersion }}
+          node-version: 24
 
       - name: Install frontend dependencies, lint & format
         working-directory: ./frontend
         run: |
-          npm install
+          npm ci
           npm run lint
           npm run format:check
 
@@ -55,18 +42,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Read backend node version from package.json
-        uses: skjnldsv/read-package-engines-version-actions@v3
-        with:
-          path: ./backend/
-        id: backend-engines
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js for backend
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ steps.backend-engines.outputs.nodeVersion }}
+          node-version: 24
 
       - name: Start db container
         run: docker compose -f compose.ci.yaml up db -d
@@ -76,7 +57,7 @@ jobs:
           DATABASE_URL: postgres://postgres@localhost:5432/dev_postgres
         run: |
           cd backend
-          npm install
+          npm ci
           npm run db:create
           npm run db:migrate
 
@@ -97,7 +78,7 @@ jobs:
       matrix:
         group: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Specs are split into parallel groups by their run time. Groups 1-3 list the
       # slow specs explicitly, group 4 runs every spec not listed, so new specs are
@@ -137,16 +118,10 @@ jobs:
           echo "Running specs: ${specs#,}"
           echo "specs=${specs#,}" >> "$GITHUB_OUTPUT"
 
-      - name: Read backend node version from package.json
-        uses: skjnldsv/read-package-engines-version-actions@v3
-        with:
-          path: ./backend/
-        id: backend-engines
-
       - name: Setup Node.js for initializing db with backend's npm scripts
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ steps.backend-engines.outputs.nodeVersion }}
+          node-version: 24
 
       - name: Start db container
         run: docker compose -f compose.ci.yaml up db -d
@@ -156,7 +131,7 @@ jobs:
           DATABASE_URL: postgres://postgres@localhost:5432/dev_postgres
         run: |
           cd backend
-          npm install
+          npm ci
           npm run db:create
           npm run db:migrate
           npm run db:seed:all
@@ -165,7 +140,7 @@ jobs:
         run: docker compose -f compose.ci.yaml up backend frontend nginx -d
 
       - name: Setup Node.js for initializing db with backend's npm scripts
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -174,6 +149,6 @@ jobs:
         with:
           working-directory: ./frontend
           config: baseUrl=http://localhost:3000/projekti
-          install-command: npm install
+          install-command: npm ci && npx cypress install
           browser: chrome
           spec: ${{ steps.specs.outputs.specs }}
