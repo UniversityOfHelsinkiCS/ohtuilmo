@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build backend
         id: build-backend
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@v3
         with:
           image: ohtuilmo-backend
           tags: production ${{ github.sha }}
@@ -24,7 +24,7 @@ jobs:
 
       - name: Build frontend
         id: build-frontend
-        uses: redhat-actions/buildah-build@v2
+        uses: redhat-actions/buildah-build@v3
         with:
           image: ohtuilmo-frontend
           tags: production ${{ github.sha }}
@@ -34,7 +34,7 @@ jobs:
           build-args: NODE_ENV="production"
 
       - name: Push backend to registry.version.helsinki.fi
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@v3
         with:
           image: ${{ steps.build-backend.outputs.image }}
           tags: ${{ steps.build-backend.outputs.tags }}
@@ -43,7 +43,7 @@ jobs:
           password: ${{ secrets.VERSION_PUSH_SECRET }}
 
       - name: Push frontend to registry.version.helsinki.fi
-        uses: redhat-actions/push-to-registry@v2
+        uses: redhat-actions/push-to-registry@v3
         with:
           image: ${{ steps.build-frontend.outputs.image }}
           tags: ${{ steps.build-frontend.outputs.tags }}
