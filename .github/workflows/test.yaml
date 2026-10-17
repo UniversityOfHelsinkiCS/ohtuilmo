@@ -4,9 +4,6 @@ on:
   workflow_call:
   pull_request:
     types: [opened, synchronize]
-  push:
-    branches:
-      - main
 
 jobs:
   lint_and_format:
