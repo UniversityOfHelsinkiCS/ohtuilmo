@@ -113,9 +113,9 @@ topicsRouter.put(
       })
         .then((topic) => {
           if (!topic) return res.status(400).json({ error: 'no topic with that id' })
+          // only admins may activate topics
           topic
             .update({
-              active: req.body.active,
               content: req.body.content,
               acronym: req.body.acronym,
             })

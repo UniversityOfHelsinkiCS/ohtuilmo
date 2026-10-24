@@ -9,7 +9,8 @@ const { emailTypeToTemplateName } = require('../utils')
 const sendSecretLink = (secretId, address) => {
   const url = urls.forSecretTopicLink(secretId)
   const html = `Thank you for the project proposal. You can use the below link to view or edit your proposal. <br /> <a href="${url}">Edit your submission</a>`
-  send(address, emailConfig.subjects.secretLink, html)
+  // the topic is saved even if the email fails, send has already logged the error
+  return send(address, emailConfig.subjects.secretLink, html).catch(() => {})
 }
 
 const send = async (to, subject, html, text) => {

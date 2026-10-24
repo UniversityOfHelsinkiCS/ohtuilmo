@@ -15,10 +15,10 @@ const testUser = {
   admin: false,
 }
 
-// JWT creates changing iat field depending on the time signed, not good for tests
+// JWT creates changing iat and exp fields depending on the time signed, not good for tests
 const filterOutIatJWT = (verifiedToken) => {
   // eslint-disable-next-line no-unused-vars
-  const { iat, ...rest } = verifiedToken
+  const { iat, exp, ...rest } = verifiedToken
   return rest
 }
 
@@ -83,6 +83,30 @@ describe('Login', () => {
     expect(await db.User.findAll({ where: { student_number: '13355557777777' } })).not.toHaveLength(
       0,
     )
+  })
+
+  test('returns a token that expires', async () => {
+    const res = await request(app)
+      .post('/api/login')
+      .set('hypersonstudentid', testUser.student_number)
+
+    const { iat, exp } = jwt.verify(res.body.token, config.secret)
+    expect(exp).toBeDefined()
+    expect(exp - iat).toBeLessThanOrEqual(24 * 60 * 60)
+  })
+
+  test('expired token is rejected', async () => {
+    const expiredToken = jwt.sign(
+      { id: testUser.student_number, admin: false, instructor: false },
+      config.secret,
+      { expiresIn: -10 },
+    )
+
+    const res = await request(app)
+      .get('/api/tokenCheck/login')
+      .set('Authorization', `bearer ${expiredToken}`)
+
+    expect(res.statusCode).toEqual(401)
   })
 
   beforeAll(async () => {

@@ -22,6 +22,7 @@
     "start": "cross-env NODE_ENV=production node index.js",
     "test": "jest --runInBand",
     "test:local": "DATABASE_URL=postgres://postgres:postgres@localhost:6543/test_postgres SECRET=testsecret EMAIL_ENABLED=false NODE_ENV=test npm run test",
+    "test:coverage": "npm run test:local -- -- --coverage",
     "test-setup": "docker compose -f ../compose.local-test.yaml --profile local-api up -d --force-recreate",
     "test-setup:down": "docker compose -f ../compose.local-test.yaml --profile local-api down",
     "test:docker": "docker compose -f ../compose.local-test.yaml down && docker compose -f ../compose.local-test.yaml  --profile api up --exit-code-from api-test",

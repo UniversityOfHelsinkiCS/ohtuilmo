@@ -6,6 +6,10 @@ usersRouter.put('/consent/:studentNumber', checkLogin, async (req, res) => {
   const { research_consent } = req.body
   const { studentNumber } = req.params
 
+  if (req.user.id !== studentNumber) {
+    return res.status(403).json({ error: 'student numbers not matching' })
+  }
+
   try {
     const user = await db.User.findOne({
       where: { student_number: studentNumber },
