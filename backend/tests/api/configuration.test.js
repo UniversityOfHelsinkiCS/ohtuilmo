@@ -56,6 +56,22 @@ describe('Configurations', () => {
     expect(resDuplicate.body.error).toEqual('name already in use')
   })
 
+  test('review questions of a missing configuration are not found', async () => {
+    const login = await createAndLoginAs(db, app, testAdmin)
+
+    const res = await request(app)
+      .get('/api/configurations/0/reviewquestions/1')
+      .set('Authorization', `bearer ${login.token}`)
+
+    expect(res.statusCode).toEqual(404)
+  })
+
+  test('customer review questions of a missing configuration are not found', async () => {
+    const res = await request(app).get('/api/configurations/0/customerreviewquestions')
+
+    expect(res.statusCode).toEqual(404)
+  })
+
   beforeEach(async () => {
     await resetUsers(db)
     await resetRegistrationQuestionSets(db)

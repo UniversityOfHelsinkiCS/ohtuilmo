@@ -69,6 +69,18 @@ test.describe('Answering peer review', () => {
     await page.goto('peerreview')
   })
 
+  test('questions are not fetched before the peer review configuration is known', async ({
+    page,
+  }) => {
+    const requests = []
+    page.on('request', (request) => requests.push(request.url()))
+    await page.reload()
+    await expect(
+      page.locator('.peer-review-container').getByText('This is info').first(),
+    ).toBeVisible()
+    expect(requests.filter((url) => url.includes('/configurations/0/'))).toEqual([])
+  })
+
   test('peer review is open', async ({ page }) => {
     await expect(
       page.locator('.peer-review-container').getByText('This is info').first(),

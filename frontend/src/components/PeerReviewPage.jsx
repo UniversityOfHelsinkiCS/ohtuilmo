@@ -63,13 +63,26 @@ class PeerReview extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.reviewConf !== prevProps.reviewConf) {
+      this.loadPeerReview()
+    }
+
     const { answerSheet, isInitializing } = this.props
     if (answerSheet !== prevProps.answerSheet && !isInitializing && answerSheet.length > 0) {
       saveDraft(this.draftKey(), answerSheet)
     }
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.loadPeerReview()
+  }
+
+  async loadPeerReview() {
+    // the peer review configuration is fetched in App.jsx and is 0 until then
+    if (!this.props.reviewConf) {
+      return
+    }
+
     // If we already have the questions and answers loaded in Redux we can skip fetching
     if (this.props.answerSheet && this.props.answerSheet.length > 0 && !this.props.isInitializing) {
       return
@@ -80,11 +93,6 @@ class PeerReview extends React.Component {
     try {
       const group = await groupManagementService.getByStudent()
       if (group) {
-        // NOTE: Because in App.jsx fetchRegistrationManagement takes so long
-        // this runs once before reviewConf is set by the above
-        // function, we get one call to /api/configurations/0/...
-        // which obviously fails. This happens only when navigating
-        // straight to this page and fixes itself right after.
         const reviewQuestionsSet = await peerReviewService.getReviewQuestions(
           this.props.reviewConf,
           this.props.reviewRound,
