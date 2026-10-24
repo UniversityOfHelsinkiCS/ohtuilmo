@@ -78,6 +78,10 @@ tagsRouter.delete('/:id', checkAdmin, async (req, res) => {
 
 tagsRouter.get('/tagsByStudent/:id', checkLogin, async (req, res) => {
   const studentNumber = req.params.id
+  // instructors see the tags of all students for now
+  if (studentNumber !== req.user.id && !req.user.admin && !req.user.instructor) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
   try {
     const timeLogs = await db.TimeLog.findAll({
       where: { student_number: studentNumber },

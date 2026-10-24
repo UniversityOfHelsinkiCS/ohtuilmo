@@ -19,6 +19,9 @@ const validateAnswerSheet = (peerReview) => {
   if (isNil(user_id) || isNil(answer_sheet) || isNil(configuration_id) || isNil(review_round)) {
     return 'All attributes must be defined.'
   }
+  if (!Array.isArray(answer_sheet)) {
+    return 'Answer sheet must be a list of answers.'
+  }
   let error = null
   for (let question of answer_sheet) {
     if (question.type === 'text') {
@@ -54,9 +57,9 @@ const validateAnswerSheet = (peerReview) => {
 }
 
 const validatePeerReviewAnswer = (question) => {
-  const peerAnswers = Object.values(question.peers)
+  const peerAnswers = Object.values(question.peers || {})
   for (let answer of peerAnswers) {
-    if (answer.length === 0) {
+    if (typeof answer !== 'string' || answer.length === 0) {
       return 'You must answer all questions'
     }
     if (answer.length < 7) {
@@ -74,7 +77,7 @@ const validateTextAnswer = (question) => {
   if (question.optional) {
     return null
   }
-  if (question.answer.length === 0) {
+  if (typeof question.answer !== 'string' || question.answer.length === 0) {
     return 'You must answer all questions'
   }
   if (question.answer.length < 10) {
@@ -115,20 +118,10 @@ const validateNumberAnswer = (question) => {
   return null
 }
 
-const create = async (req, res) => {
-  const { peerReview } = req.body
-  try {
-    const sentAnswerSheet = await db.PeerReview.create(peerReview)
-    return res.status(201).json(sentAnswerSheet)
-  } catch (err) {
-    return handleDatabaseError(res, err)
-  }
-}
-
 peerReviewRouter.post('/', checkLogin, async (req, res) => {
   const { peerReview } = req.body
 
-  if (!peerReview.user_id || req.user.id !== peerReview.user_id) {
+  if (!peerReview || !peerReview.user_id || req.user.id !== peerReview.user_id) {
     return res.status(401).json({ error: 'unauthorized' })
   }
 
@@ -137,7 +130,38 @@ peerReviewRouter.post('/', checkLogin, async (req, res) => {
   if (error) {
     return res.status(400).json({ error })
   }
-  create(req, res)
+
+  try {
+    const registrationManagement = await db.RegistrationManagement.findOne({
+      order: [['createdAt', 'DESC']],
+    })
+    if (!registrationManagement || !registrationManagement.peer_review_open) {
+      return res.status(400).json({ error: 'peer review is not open' })
+    }
+
+    // the review is saved for the open configuration and round, not for the sent ones
+    const { peer_review_conf, peer_review_round } = registrationManagement
+    const alreadySubmitted = await db.PeerReview.findOne({
+      where: {
+        user_id: req.user.id,
+        configuration_id: peer_review_conf,
+        review_round: peer_review_round,
+      },
+    })
+    if (alreadySubmitted) {
+      return res.status(400).json({ error: 'peer review already submitted' })
+    }
+
+    const sentAnswerSheet = await db.PeerReview.create({
+      user_id: req.user.id,
+      answer_sheet: peerReview.answer_sheet,
+      configuration_id: peer_review_conf,
+      review_round: peer_review_round,
+    })
+    return res.status(201).json(sentAnswerSheet)
+  } catch (err) {
+    return handleDatabaseError(res, err)
+  }
 })
 
 peerReviewRouter.post('/insertTestData', checkAdmin, async (req, res) => {
