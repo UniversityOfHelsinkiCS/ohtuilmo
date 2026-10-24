@@ -12,6 +12,11 @@ const loginReducer = (state = initialState, action) => {
         password: '',
         user: action.payload,
       }
+    case 'REFRESH_TOKEN':
+      return {
+        ...state,
+        user: state.user && { ...state.user, token: action.payload },
+      }
     case 'LOGOUT_USER':
       return {
         ...state,

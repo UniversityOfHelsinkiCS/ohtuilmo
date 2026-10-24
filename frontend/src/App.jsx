@@ -67,6 +67,7 @@ const App = (props) => {
   const {
     updateIsLoading,
     loginUser,
+    refreshToken,
     fetchRegistrationManagement,
     setError,
     logoutUser,
@@ -123,7 +124,9 @@ const App = (props) => {
         try {
           // This has to be the service login and not await loginUser(), because
           // loginUser updates redux state which forces a reload => breaks things!
-          await loginService.login()
+          // Only the token is replaced, it expires and the login renews it.
+          const { token } = await loginService.login()
+          refreshToken(token)
         } catch (err) {
           console.error(err)
         }
@@ -131,7 +134,14 @@ const App = (props) => {
     }, 60 * 1000)
 
     return () => clearInterval(loginInterval)
-  }, [fetchRegistrationManagement, loginUser, setError, updateIsLoading, initializeMyGroup])
+  }, [
+    fetchRegistrationManagement,
+    loginUser,
+    refreshToken,
+    setError,
+    updateIsLoading,
+    initializeMyGroup,
+  ])
 
   const logout = () => {
     updateIsLoading(true)
@@ -325,6 +335,7 @@ const mapDispatchToProps = {
   ...peerReviewPageActions,
   logoutUser: userActions.logoutUser,
   loginUser: userActions.loginUser,
+  refreshToken: userActions.refreshToken,
   initializeMyGroup: myGroupActions.initializeMyGroup,
 }
 

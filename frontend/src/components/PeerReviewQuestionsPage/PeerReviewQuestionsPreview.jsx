@@ -32,14 +32,22 @@ PreviewErrorBoundary.propTypes = {
 // shows the questions the same way as students see them in the peer review form
 const PeerReviewQuestionsPreview = ({ questions }) => {
   const [answers, setAnswers] = useState({})
+  const [peerAnswers, setPeerAnswers] = useState({})
 
   const answerSheet = questions.map((question, questionId) => ({
     answer: answers[questionId] ?? (question.type === 'number' ? 0 : ''),
-    peers: {},
+    peers: peerAnswers[questionId] ?? {},
   }))
 
   const updateAnswer = (answer, questionId) => {
     setAnswers({ ...answers, [questionId]: answer })
+  }
+
+  const updatePeerReview = (peerId, answer, questionId) => {
+    setPeerAnswers({
+      ...peerAnswers,
+      [questionId]: { ...peerAnswers[questionId], [peerId]: answer },
+    })
   }
 
   return (
@@ -50,7 +58,7 @@ const PeerReviewQuestionsPreview = ({ questions }) => {
           peers={SAMPLE_PEERS}
           answerSheet={answerSheet}
           updateAnswer={updateAnswer}
-          updatePeerReview={() => {}}
+          updatePeerReview={updatePeerReview}
         />
       </PreviewErrorBoundary>
     </div>

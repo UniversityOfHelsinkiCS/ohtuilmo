@@ -20,7 +20,55 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import { Table, TableHead, TableRow, TableBody, TableCell } from '@mui/material'
 
+// The answers are saved in the browser while writing, so that they are not lost
+// if submitting fails, e.g. because the login session has expired.
+const draftKey = (reviewConf, reviewRound) =>
+  `peerReviewDraft:${getUser()?.student_number}:${reviewConf}:${reviewRound}`
+
+// the draft is used only if it was saved for the same questions
+const loadDraft = (key, answerSheet) => {
+  try {
+    const draft = JSON.parse(window.localStorage.getItem(key))
+    const sameQuestions =
+      Array.isArray(draft) &&
+      draft.length === answerSheet.length &&
+      draft.every(
+        (answer, i) => answer.id === answerSheet[i].id && answer.type === answerSheet[i].type,
+      )
+    return sameQuestions ? draft : null
+  } catch {
+    return null
+  }
+}
+
+const saveDraft = (key, answerSheet) => {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(answerSheet))
+  } catch {
+    // storage full or disabled, the answers are still on the page
+  }
+}
+
+const removeDraft = (key) => {
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    // storage disabled
+  }
+}
+
 class PeerReview extends React.Component {
+  draftKey() {
+    return draftKey(this.props.reviewConf, this.props.reviewRound)
+  }
+
+  componentDidUpdate(prevProps) {
+    const { answerSheet, isInitializing } = this.props
+    if (answerSheet !== prevProps.answerSheet && !isInitializing && answerSheet.length > 0) {
+      saveDraft(this.draftKey(), answerSheet)
+    }
+  }
+
   async componentDidMount() {
     // If we already have the questions and answers loaded in Redux we can skip fetching
     if (this.props.answerSheet && this.props.answerSheet.length > 0 && !this.props.isInitializing) {
@@ -147,7 +195,7 @@ class PeerReview extends React.Component {
       }
     })
 
-    this.props.initializeAnswerSheet(tempAnswerSheet)
+    this.props.initializeAnswerSheet(loadDraft(this.draftKey(), tempAnswerSheet) || tempAnswerSheet)
   }
 
   Submit = async (event, answerSheet, reviewConf) => {
@@ -164,12 +212,21 @@ class PeerReview extends React.Component {
           review_round: this.props.reviewRound,
         },
       })
+      removeDraft(this.draftKey())
       this.props.setSubmittedReviews(this.props.submittedReviews.concat(createdReview))
       this.props.setSuccess('Peer review saved!')
       this.props.history.push('/')
     } catch (e) {
       console.log('error happened', e.response)
-      this.props.setError(e.response.data.error)
+      // no response: an expired Shibboleth session redirects the request to the login page
+      if (!e.response || e.response.status === 401) {
+        this.props.setError(
+          'Your session has expired. Your answers are saved in this browser, reload the page and submit again.',
+          60000,
+        )
+      } else {
+        this.props.setError(e.response.data?.error || 'Saving failed, please try again.')
+      }
     }
   }
 
@@ -281,8 +338,10 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
             <QuestionRows
               peers={peers}
               options={temp}
-              questionId={question.header}
+              questionId={questionId}
+              questionName={question.header}
               answerSheet={answerSheet[questionId]}
+              updatePeerReview={updatePeerReview}
             />
           </TableBody>
         </Table>
@@ -306,8 +365,10 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
           <TableBody>
             <QuestionRowOneLine
               options={temp}
-              questionId={question.header}
+              questionId={questionId}
+              questionName={question.header}
               answerSheet={answerSheet[questionId]}
+              updateAnswer={updateAnswer}
             />
           </TableBody>
         </Table>
@@ -389,7 +450,14 @@ const OptionHeaders = ({ options }) => {
   })
 }
 
-const QuestionRows = ({ peers, options, questionId, answerSheet }) => (
+const QuestionRows = ({
+  peers,
+  options,
+  questionId,
+  questionName,
+  answerSheet,
+  updatePeerReview,
+}) => (
   <React.Fragment>
     {peers.map((peer, mappiAvain) => (
       <QuestionRow
@@ -398,7 +466,9 @@ const QuestionRows = ({ peers, options, questionId, answerSheet }) => (
         peerName={extractCallingName(peer.first_names) + ' ' + peer.last_name}
         peerId={peer.first_names + ' ' + peer.last_name}
         questionId={questionId}
+        questionName={questionName}
         answerSheet={answerSheet}
+        updatePeerReview={updatePeerReview}
       />
     ))}
   </React.Fragment>
@@ -414,7 +484,7 @@ const PeerReviewTextFields = ({ peers, questionId, answerSheet, updatePeerReview
           </p>
           <TextField
             className="peer-review-box__text-field"
-            value={answerSheet[questionId].answer}
+            value={answerSheet[questionId].peers[`${peer.first_names} ${peer.last_name}`] ?? ''}
             rows="2"
             multiline
             variant="outlined"
@@ -433,7 +503,15 @@ const PeerReviewTextFields = ({ peers, questionId, answerSheet, updatePeerReview
   )
 }
 
-const QuestionRow = ({ peerName, options, peerId, questionId, answerSheet }) => {
+const QuestionRow = ({
+  peerName,
+  options,
+  peerId,
+  questionId,
+  questionName,
+  answerSheet,
+  updatePeerReview,
+}) => {
   return (
     <TableRow hover className="peer-review-box__peer-row">
       <TableCell align="center">{peerName}</TableCell>
@@ -442,8 +520,9 @@ const QuestionRow = ({ peerName, options, peerId, questionId, answerSheet }) => 
           <TableCell className="peer-review-box__radio-button" key={buttonId}>
             <input
               type="radio"
-              name={questionId.toString() + peerId.toString()}
-              onClick={() => radioSelectHandler(peerId, buttonNumber, answerSheet)}
+              name={questionName.toString() + peerId.toString()}
+              checked={answerSheet.peers[peerId] === buttonNumber}
+              onChange={() => updatePeerReview(peerId, buttonNumber, questionId)}
             />
           </TableCell>
         )
@@ -452,7 +531,7 @@ const QuestionRow = ({ peerName, options, peerId, questionId, answerSheet }) => 
   )
 }
 
-const QuestionRowOneLine = ({ options, questionId, answerSheet }) => {
+const QuestionRowOneLine = ({ options, questionId, questionName, answerSheet, updateAnswer }) => {
   return (
     <TableRow hover className="peer-review-box__peer-row">
       {options.map((buttonId, buttonNumber) => {
@@ -460,8 +539,9 @@ const QuestionRowOneLine = ({ options, questionId, answerSheet }) => {
           <TableCell className="peer-review-box__radio-button" key={buttonId}>
             <input
               type="radio"
-              name={questionId.toString()}
-              onClick={() => radioSelectHandlerOneLine(buttonNumber, answerSheet)}
+              name={questionName.toString()}
+              checked={answerSheet.answer === buttonNumber}
+              onChange={() => updateAnswer(buttonNumber, questionId)}
             />
           </TableCell>
         )
@@ -476,21 +556,6 @@ const peerReviewHandler = (peerId, value, questionId, updatePeerReview) => {
 
 const textFieldHandler = (value, questionId, updateAnswer) => {
   updateAnswer(value, questionId)
-}
-
-const radioSelectHandler = (peerId, buttonId, answerSheet) => {
-  updateAnswers(peerId, buttonId, answerSheet)
-}
-
-const radioSelectHandlerOneLine = (buttonId, questionId) => {
-  updateOneliner(buttonId, questionId)
-}
-
-const updateOneliner = (buttonId, answerSheet) => {
-  answerSheet.answer = buttonId
-}
-const updateAnswers = (peerId, buttonId, answerSheet) => {
-  answerSheet.peers[peerId] = buttonId
 }
 
 const mapStateToProps = (state) => {
