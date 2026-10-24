@@ -164,6 +164,9 @@ configurationsRouter.get('/:id/reviewquestions/:reviewround', checkLogin, async 
     const response = await db.Configuration.findByPk(req.params.id, {
       include: ['review_question_set1', 'review_question_set2', 'registration_question_set'],
     })
+    if (!response) {
+      return res.status(404).json({ error: 'configuration not found' })
+    }
     if (req.params.reviewround === '1') {
       res.status(200).json(response.review_question_set1)
     } else if (req.params.reviewround === '2') {
@@ -181,6 +184,9 @@ configurationsRouter.get('/:id/customerreviewquestions', async (req, res) => {
     const response = await db.Configuration.findByPk(req.params.id, {
       include: 'customer_review_question_set',
     })
+    if (!response) {
+      return res.status(404).json({ error: 'configuration not found' })
+    }
     res.status(200).json(response.customer_review_question_set)
   } catch (error) {
     handleDatabaseError(res, error)
