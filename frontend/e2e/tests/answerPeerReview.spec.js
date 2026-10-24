@@ -94,6 +94,44 @@ test.describe('Answering peer review', () => {
     await expect(page.getByText('You must answer all questions').first()).toBeVisible()
   })
 
+  const fillAnswers = async (page) => {
+    await numberInput(page, 'Previous experiene in software developement').fill('123')
+    await numberInput(page, 'Without option?').fill('45')
+    await page.locator('[name="Ok and with optionTimo *Teppo Tellervo Testaaja"]').nth(2).click()
+  }
+
+  const expectAnswersKept = async (page) => {
+    await expect(numberInput(page, 'Previous experiene in software developement')).toHaveValue(
+      '123',
+    )
+    await expect(numberInput(page, 'Without option?')).toHaveValue('45')
+    await expect(
+      page.locator('[name="Ok and with optionTimo *Teppo Tellervo Testaaja"]').nth(2),
+    ).toBeChecked()
+  }
+
+  test('answers are kept when the page is reloaded', async ({ page }) => {
+    await fillAnswers(page)
+    await page.reload()
+    await expectAnswersKept(page)
+  })
+
+  test('answers are kept and an error is shown if the session has expired', async ({ page }) => {
+    await fillAnswers(page)
+    // an expired Shibboleth session redirects the request, which fails in the browser
+    await page.route(/\/api\/peerReview$/i, (route) =>
+      route.request().method() === 'POST' ? route.abort() : route.continue(),
+    )
+    await page.locator('[name="Ok and with optionDonald John Trump"]').nth(5).click()
+    await submit(page)
+
+    await expect(page.locator('.notification')).toContainText('Your session has expired')
+    await page.unrouteAll()
+    await page.reload()
+    await expectAnswersKept(page)
+    await expect(page.locator('[name="Ok and with optionDonald John Trump"]').nth(5)).toBeChecked()
+  })
+
   test('shows a submit confimation when all field and butotns are filled properly', async ({
     page,
   }) => {

@@ -34,6 +34,12 @@ export const loginUser = (userCredentials) => {
   }
 }
 
+// replaces only the token, so that the tokens of long open pages do not expire
+export const refreshToken = (token) => ({
+  type: 'REFRESH_TOKEN',
+  payload: token,
+})
+
 export const logoutUser = () => {
   return async () => {
     const logoutUrl = await logoutService.logout()
