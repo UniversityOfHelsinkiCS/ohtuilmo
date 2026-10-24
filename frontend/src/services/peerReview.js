@@ -36,4 +36,10 @@ const getReviewQuestions = async (configurationId, reviewRound) => {
   return response.data
 }
 
-export default { get, create, getReviewQuestions, getAnswersByInstructor }
+const remove = async (id) => {
+  await axios.delete(`${url}/${id}`, {
+    headers: { Authorization: 'Bearer ' + getUserToken() },
+  })
+}
+
+export default { get, create, remove, getReviewQuestions, getAnswersByInstructor }

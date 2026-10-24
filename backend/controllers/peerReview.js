@@ -271,6 +271,8 @@ peerReviewRouter.get('/forInstructor', checkLogin, async (req, res) => {
         )
         .map((answer) => {
           return {
+            // admins delete reviews with the id
+            id: answer.id,
             student: {
               first_names: answer.user.first_names,
               last_name: answer.user.last_name,

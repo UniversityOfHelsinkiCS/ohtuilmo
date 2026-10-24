@@ -14,6 +14,7 @@ import * as notificationActions from '../../reducers/actions/notificationActions
 
 import './InstructorPage.css'
 import StudentViewGroupAnswers from './StudentViewGroupAnswers'
+import DeletePeerReviews from './DeletePeerReviews'
 
 //Services
 import peerReviewService from '../../services/peerReview'
@@ -54,7 +55,14 @@ const GroupStudents = ({ myGroup }) => {
   }
 }
 
-const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) => {
+const Answers = ({
+  answers,
+  currentConfiguration,
+  currentGroupID,
+  viewMode,
+  isAdmin,
+  onDelete,
+}) => {
   answers = answers.filter((group) => group.group.configurationId === currentConfiguration)
 
   return (
@@ -76,6 +84,14 @@ const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) =>
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 1st Round</h2>
                     </div>
+                    {isAdmin && (
+                      <DeletePeerReviews
+                        answers={projectGroup.round1Answers}
+                        round={1}
+                        groupName={projectGroup.group.name}
+                        onDelete={onDelete}
+                      />
+                    )}
                     {viewMode === 'students' ? (
                       <StudentViewGroupAnswers answers={projectGroup.round1Answers} />
                     ) : (
@@ -98,6 +114,14 @@ const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) =>
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 2nd Round</h2>
                     </div>
+                    {isAdmin && (
+                      <DeletePeerReviews
+                        answers={projectGroup.round2Answers}
+                        round={2}
+                        groupName={projectGroup.group.name}
+                        onDelete={onDelete}
+                      />
+                    )}
                     {viewMode === 'students' ? (
                       <StudentViewGroupAnswers answers={projectGroup.round2Answers} />
                     ) : (
@@ -486,6 +510,8 @@ const InstructorPage = (props) => {
     setGroups,
     setCurrentGroupID,
     setError,
+    setSuccess,
+    isAdmin,
   } = props
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -542,6 +568,24 @@ const InstructorPage = (props) => {
     setSearchParams(params, { replace: true })
   }, [currentConfiguration, currentGroupID, viewMode, setSearchParams])
 
+  const deletePeerReview = async (answer) => {
+    try {
+      await peerReviewService.remove(answer.id)
+      const withoutDeleted = (roundAnswers) => roundAnswers.filter(({ id }) => id !== answer.id)
+      setAnswers(
+        answers.map((groupAnswers) => ({
+          ...groupAnswers,
+          round1Answers: withoutDeleted(groupAnswers.round1Answers),
+          round2Answers: withoutDeleted(groupAnswers.round2Answers),
+        })),
+      )
+      setSuccess('Peer review deleted')
+    } catch (err) {
+      console.error('error happened', err, err.response)
+      setError('Deleting the peer review failed')
+    }
+  }
+
   if (!answers || !currentConfiguration || !groups || !currentGroupID) {
     return <div className="flex-column-32-container">Loading</div>
   }
@@ -578,6 +622,8 @@ const InstructorPage = (props) => {
         currentConfiguration={currentConfiguration}
         currentGroupID={currentGroupID}
         viewMode={viewMode}
+        isAdmin={isAdmin}
+        onDelete={deletePeerReview}
       />
     </div>
   )
@@ -590,6 +636,7 @@ const mapStateToProps = (state) => {
     answers: state.instructorPage.answers,
     groups: state.instructorPage.groups,
     currentGroupID: state.instructorPage.currentGroupID,
+    isAdmin: !!state.login.user?.user?.admin,
   }
 }
 
@@ -598,6 +645,7 @@ const mapDispatchToProps = {
   setCurrentConfiguration: instructorPageActions.setCurrentConfiguration,
   setAnswers: instructorPageActions.setAnswers,
   setError: notificationActions.setError,
+  setSuccess: notificationActions.setSuccess,
   setGroups: instructorPageActions.setGroups,
   setCurrentGroupID: instructorPageActions.setCurrentGroupID,
 }

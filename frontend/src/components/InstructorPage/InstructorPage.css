@@ -225,3 +225,10 @@
     white-space: nowrap;
   }
 }
+
+.delete-peer-reviews {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

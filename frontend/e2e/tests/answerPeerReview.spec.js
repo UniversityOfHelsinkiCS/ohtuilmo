@@ -81,6 +81,12 @@ test.describe('Answering peer review', () => {
     expect(requests.filter((url) => url.includes('/configurations/0/'))).toEqual([])
   })
 
+  test('question headers and descriptions are aligned left', async ({ page }) => {
+    const box = page.locator('.peer-review-box', { hasText: 'How many hours?' })
+    await expect(box.locator('h3')).toHaveCSS('text-align', 'left')
+    await expect(box.getByText('How many hours?')).toHaveCSS('text-align', 'left')
+  })
+
   test('peer review is open', async ({ page }) => {
     await expect(
       page.locator('.peer-review-container').getByText('This is info').first(),

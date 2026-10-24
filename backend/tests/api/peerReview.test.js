@@ -3,7 +3,14 @@ const request = require('supertest')
 
 const { app, server, db } = require('../../index')
 const { loginAs } = require('../utils/login')
-const { student, otherStudent, createUsers, createGroup } = require('../utils/fixtures')
+const {
+  student,
+  otherStudent,
+  instructor,
+  admin,
+  createUsers,
+  createGroup,
+} = require('../utils/fixtures')
 
 const answerSheet = [{ type: 'number', id: 0, questionHeader: 'Tunnit', answer: 120 }]
 
@@ -125,6 +132,65 @@ describe('Peer review', () => {
     })
 
     expect(res.statusCode).toEqual(400)
+  })
+
+  describe('deletion', () => {
+    const createReview = () =>
+      db.PeerReview.create({
+        user_id: student.student_number,
+        configuration_id: group.configurationId,
+        review_round: 1,
+        answer_sheet: answerSheet,
+      })
+
+    const deleteAs = async (user, review) => {
+      const login = await loginAs(app, user.student_number)
+      return request(app)
+        .delete(`/api/peerreview/${review.id}`)
+        .set('Authorization', `bearer ${login.token}`)
+    }
+
+    test('the answers shown on the instructor page contain the review id', async () => {
+      const review = await createReview()
+      const login = await loginAs(app, admin.student_number)
+
+      const res = await request(app)
+        .get('/api/peerreview/forInstructor')
+        .set('Authorization', `bearer ${login.token}`)
+
+      expect(res.statusCode).toEqual(200)
+      const answers = res.body.find((answers) => answers.group.id === group.id).round1Answers
+      expect(answers).toHaveLength(1)
+      expect(answers[0].id).toEqual(review.id)
+    })
+
+    test('can be done by an admin', async () => {
+      const review = await createReview()
+
+      const res = await deleteAs(admin, review)
+
+      expect(res.statusCode).toEqual(204)
+      expect(await db.PeerReview.count()).toEqual(0)
+    })
+
+    test('can not be done by the student', async () => {
+      const review = await createReview()
+
+      const res = await deleteAs(student, review)
+
+      expect(res.statusCode).toEqual(401)
+      expect(await db.PeerReview.count()).toEqual(1)
+    })
+
+    test('can not be done by the instructor of the group', async () => {
+      await group.update({ instructorId: instructor.student_number })
+      const review = await createReview()
+
+      const res = await deleteAs(instructor, review)
+
+      expect(res.statusCode).toEqual(401)
+      expect(await db.PeerReview.count()).toEqual(1)
+    })
   })
 
   beforeEach(async () => {

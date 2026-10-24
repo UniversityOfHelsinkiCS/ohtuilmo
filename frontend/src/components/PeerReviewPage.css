@@ -1,5 +1,5 @@
 .peer-review-box {
-  text-align: center;
+  text-align: left;
   width: 70%;
   border: 2px solid black;
   padding: 50px;
@@ -10,8 +10,7 @@
   border-radius: 25px;
 }
 
-.peer-review-container__h1,
-.peer-review-box__h3 {
+.peer-review-container__h1 {
   text-align: center;
 }
 
