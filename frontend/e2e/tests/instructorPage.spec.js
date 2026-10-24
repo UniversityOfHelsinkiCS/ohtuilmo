@@ -1,7 +1,20 @@
-/* eslint-disable */
+import { test, expect } from '../test'
+import {
+  loginAsAdmin,
+  createGroup,
+  createPeerReviews,
+  deleteAllGroups,
+  deleteAllPeerReviews,
+} from '../helpers'
 
-const initTests = () => {
-  cy.createGroup({
+const withApi = async (playwright, fn) => {
+  const request = await playwright.request.newContext({ baseURL: test.info().project.use.baseURL })
+  await fn(request)
+  await request.dispose()
+}
+
+const initTests = async (request) => {
+  await createGroup(request, {
     name: 'Tykittelijät',
     topicId: 1,
     configurationId: 1,
@@ -9,7 +22,7 @@ const initTests = () => {
     studentIds: ['012345678', '012345698'],
   })
 
-  cy.createGroup({
+  await createGroup(request, {
     name: 'Kakkostykitys',
     topicId: 3,
     configurationId: 1,
@@ -17,7 +30,7 @@ const initTests = () => {
     studentIds: ['012345678', '012345698'],
   })
 
-  cy.createGroup({
+  await createGroup(request, {
     name: 'Kämmäilijät',
     topicId: 2,
     configurationId: 2,
@@ -298,82 +311,91 @@ const initTests = () => {
     ],
   }
 
-  cy.createPeerReviews(konf1vastaukset1)
-  cy.createPeerReviews(konf1vastaukset2)
-  cy.createPeerReviews(konf2vastaukset1)
+  await createPeerReviews(request, konf1vastaukset1)
+  await createPeerReviews(request, konf1vastaukset2)
+  await createPeerReviews(request, konf2vastaukset1)
 }
 
-describe('Instructor page', () => {
-  before(() => {
-    cy.deleteAllGroups()
-    cy.deleteAllPeerReviews()
-    initTests()
+const selectConfiguration = async (page, name) => {
+  await page.locator('[data-cy=configuration-selector]').click()
+  await page.locator('.configuration-menu-item', { hasText: name }).click()
+}
+
+const selectGroup = async (page, name) => {
+  await page.locator('[data-cy=group-selector]').click()
+  await page.locator('.specified-group-menu-item', { hasText: name }).click()
+}
+
+const shows = (page, text) => expect(page.getByText(text).first()).toBeVisible()
+
+test.describe('Instructor page', () => {
+  test.beforeAll(async ({ playwright }) => {
+    await withApi(playwright, async (request) => {
+      await deleteAllGroups(request)
+      await deleteAllPeerReviews(request)
+      await initTests(request)
+    })
   })
 
-  beforeEach(() => {
-    cy.loginAsAdmin()
-    cy.visit('/instructorpage')
+  test.beforeEach(async ({ page }) => {
+    await loginAsAdmin(page)
+    await page.goto('instructorpage')
   })
 
-  it('shows correct url, contains configuration selector and displays its group', () => {
+  test('shows correct url, contains configuration selector and displays its group', async ({
+    page,
+  }) => {
     // submit not successfull, still on same page
-    cy.url().should('contain', '/instructorpage')
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
-    cy.contains('Tykittelijät')
-    cy.contains('3.00')
+    await expect(page).toHaveURL(/\/instructorpage/)
+    await selectConfiguration(page, 'Konfiguraatio 1')
+    await shows(page, 'Tykittelijät')
+    await shows(page, '3.00')
   })
 
-  it('displays the corresponding groups of each configuration', () => {
+  test('displays the corresponding groups of each configuration', async ({ page }) => {
     // submit not successfull, still on same page
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 2').click()
-    cy.contains('Kämmäilijät')
-    cy.contains('This group has not answered to the second peer review round yet.')
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
-    cy.contains('4.00')
+    await selectConfiguration(page, 'Konfiguraatio 2')
+    await shows(page, 'Kämmäilijät')
+    await shows(page, 'This group has not answered to the second peer review round yet.')
+    await selectConfiguration(page, 'Konfiguraatio 1')
+    await shows(page, '4.00')
   })
 
-  it('is loaded displaying all groups of a configuration', () => {
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
-    cy.contains('Tykittelijät')
-    cy.contains('Kakkostykitys')
+  test('is loaded displaying all groups of a configuration', async ({ page }) => {
+    await selectConfiguration(page, 'Konfiguraatio 1')
+    await shows(page, 'Tykittelijät')
+    await shows(page, 'Kakkostykitys')
   })
 
-  it('can filter and display only one group at a time', () => {
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
+  test('can filter and display only one group at a time', async ({ page }) => {
+    await selectConfiguration(page, 'Konfiguraatio 1')
 
-    cy.get('[data-cy=group-selector]').click()
-    cy.get('.specified-group-menu-item').contains('Tykittelijät').click()
-    cy.contains('Tykittelijät')
-    cy.get('body').should('not.contain', 'Kakkostykitys')
+    await selectGroup(page, 'Tykittelijät')
+    await shows(page, 'Tykittelijät')
+    await expect(page.locator('body')).not.toContainText('Kakkostykitys')
 
-    cy.get('[data-cy=group-selector]').click()
-    cy.get('.specified-group-menu-item').contains('Kakkostykitys').click()
-    cy.contains('Kakkostykitys')
-    cy.get('body').should('not.contain', 'Tykittelijät')
+    await selectGroup(page, 'Kakkostykitys')
+    await shows(page, 'Kakkostykitys')
+    await expect(page.locator('body')).not.toContainText('Tykittelijät')
   })
 
-  it('can toggle between student and question views', () => {
-    cy.get('[data-cy=configuration-selector]').click()
-    cy.get('.configuration-menu-item').contains('Konfiguraatio 1').click()
-    cy.get('[data-cy=group-selector]').click()
-    cy.get('.specified-group-menu-item').contains('Tykittelijät').click()
+  test('can toggle between student and question views', async ({ page }) => {
+    await selectConfiguration(page, 'Konfiguraatio 1')
+    await selectGroup(page, 'Tykittelijät')
 
-    cy.contains('Student View').click()
-    cy.contains('Question View')
-    cy.contains('/ 1st Round')
-    cy.contains('Tykittelijät')
+    await page.getByText('Student View').first().click()
+    await shows(page, 'Question View')
+    await shows(page, '/ 1st Round')
+    await shows(page, 'Tykittelijät')
 
-    cy.contains('Question View').click()
-    cy.contains('Student View')
+    await page.getByText('Question View').first().click()
+    await shows(page, 'Student View')
   })
 
-  after(() => {
-    cy.deleteAllGroups()
-    cy.deleteAllPeerReviews()
+  test.afterAll(async ({ playwright }) => {
+    await withApi(playwright, async (request) => {
+      await deleteAllGroups(request)
+      await deleteAllPeerReviews(request)
+    })
   })
 })

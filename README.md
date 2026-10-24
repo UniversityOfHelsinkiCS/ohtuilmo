@@ -46,9 +46,9 @@ In development environment, login is faked in backend using fakeshibbo middlewar
 
 To modify the currently used user, you can press one of the Role buttons on the Navbar. After that all requests to the backend will made be as an user with the selected role.
 
-## How to run Cypress tests
+## How to run e2e tests (Playwright)
 
-1. Switch to frontend folder.
+1. Switch to frontend folder. On the first run install the browser with `npx playwright install chromium`.
 
 2. Start test setup with command `npm run test-setup`. This will create 4 containers:
 
@@ -59,7 +59,9 @@ To modify the currently used user, you can press one of the Role buttons on the 
    | frontend  | 5000 |
    | adminer   | 9090 |
 
-3. Run tests with graphic interface with command `npm run test` or in headless mode with command `npm run test:headless`. (for headless you can specify the browser (e.g. firefox) with `npm run test:headless -- --browser firefox`)
+   On macOS port 5000 is taken by the AirPlay receiver; use another port with `E2E_FRONTEND_PORT=5050 npm run test-setup` and run the tests with `E2E_BASE_URL=http://localhost:5050`.
+
+3. Run tests in the Playwright UI with `npm run test` or headless with `npm run test:headless`. A single spec: `npm run test:headless -- e2e/tests/timeLogs.spec.js`, a single test: add `-g "test name"`. Traces of failed tests are opened with `npx playwright show-trace <path>`.
 
 4. If you want to restore test setup and the database to their initial stage, just run `npm run test-setup` again.
 

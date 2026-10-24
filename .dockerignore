@@ -83,8 +83,6 @@ gitignored/
 **/*.conf
 **/*.ini
 **/toska_login
-**/cypress.env.json
-cypress/
 **/*Dockerfile
 **/*docker-compose.yml
 **/*.husky

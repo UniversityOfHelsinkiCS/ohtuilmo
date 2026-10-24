@@ -12,7 +12,8 @@ export const CustomDatePicker = ({
   helperText,
   disabled,
 }) => {
-  const Picker = typeof window !== 'undefined' && window.Cypress ? DesktopDatePicker : DatePicker
+  const Picker =
+    typeof navigator !== 'undefined' && navigator.webdriver ? DesktopDatePicker : DatePicker
 
   return (
     <Picker
