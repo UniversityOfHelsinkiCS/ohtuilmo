@@ -102,6 +102,9 @@ instructorReviewRouter.post('/', checkLogin, async (req, res) => {
     if (instructedGroups.length === 0) {
       return res.status(401).json({ error: 'unauthorized' })
     }
+    if (!instructedGroups.some((group) => group.id === Number(instructorReview.group_id))) {
+      return res.status(403).json({ error: 'You are not the instructor of the group' })
+    }
   } catch (error) {
     console.log(error)
     return res.status(500).json({ error: 'Something is wrong... try reloading the page' })

@@ -185,6 +185,11 @@ timeLogsRouter.post('/', checkLogin, async (req, res) => {
   }
 
   try {
+    const group = await db.Group.findByPk(groupId)
+    if (!group || !(await group.hasStudent(studentNumber))) {
+      return res.status(403).json({ error: 'You are not a member of the group.' })
+    }
+
     const sprintRecord = await db.Sprint.findOne({
       where: {
         sprint: sprint,
