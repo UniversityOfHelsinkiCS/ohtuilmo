@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken')
 const config = require('./config')
 const { test_user } = require('./config/dev')
+const { isDevelopmentEnvironment } = require('./utils')
 
 /**
  * @typedef {import("express").Request} Request
@@ -128,7 +129,8 @@ const fakeshibbo = (req, res, next) => {
 const logger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
+  // bodies contain personal data, e.g. reviews and registrations
+  if (isDevelopmentEnvironment()) console.log('Body:  ', request.body)
   console.log('---')
   next()
 }

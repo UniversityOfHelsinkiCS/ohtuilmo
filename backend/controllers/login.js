@@ -3,6 +3,9 @@ const jwt = require('jsonwebtoken')
 const config = require('../config/')
 const db = require('../models/index')
 
+// the frontend logs in again on every page load
+const TOKEN_EXPIRATION = '24h'
+
 const handleDatabaseError = (res, error) => {
   console.log(error)
   res.status(500).json({ error: 'Something is wrong... try reloading the page' })
@@ -56,6 +59,7 @@ loginRouter.post('/', async (req, res) => {
           instructor: await userIsInstructorForCurrentGroup(foundUser.student_number),
         },
         config.secret,
+        { expiresIn: TOKEN_EXPIRATION },
       )
       console.log('[Login] return')
       return res.status(200).set('Cache-Control', 'no-store').json({
@@ -80,6 +84,7 @@ loginRouter.post('/', async (req, res) => {
           instructor: await userIsInstructorForCurrentGroup(savedUser.student_number),
         },
         config.secret,
+        { expiresIn: TOKEN_EXPIRATION },
       )
       console.log('[Login] return')
       return res.status(200).set('Cache-Control', 'no-store').json({

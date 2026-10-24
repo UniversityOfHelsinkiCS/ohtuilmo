@@ -17,6 +17,7 @@ Backend API tests (Jest + supertest, run against a real Postgres):
 - `cd backend && npm run test-setup` — start test db on :6543 and migrate it
 - `npm run test:local` — run all API tests against it
 - Single file: `npm run test:local -- tests/api/sprints.test.js` (add `-t "name"` for one test)
+- `npm run test:coverage` — same with a coverage report of controllers and middleware (html in `coverage/`)
 - `npm run test:docker` — everything in containers
 - New migrations go in `backend/migrations` (sequelize-cli, `npm run db:migrate`); dev data in `backend/seeders`.
 
