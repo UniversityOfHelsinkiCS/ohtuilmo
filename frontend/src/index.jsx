@@ -125,6 +125,7 @@ const Root = () => {
 const root = createRoot(document.getElementById('root'))
 root.render(<Root />)
 
-if (window.Cypress) {
+// exposed for the e2e tests, browsers driven by Playwright set navigator.webdriver
+if (navigator.webdriver) {
   window.store = store
 }

@@ -1,6 +1,6 @@
 # Definition of Done
 
-- Cypress tests are passing and new tests have been added, if applicable
+- E2e (Playwright) tests are passing and new tests have been added, if applicable
 
 - The code has been reviewed by another team member
 

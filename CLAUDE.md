@@ -20,12 +20,13 @@ Backend API tests (Jest + supertest, run against a real Postgres):
 - `npm run test:docker` — everything in containers
 - New migrations go in `backend/migrations` (sequelize-cli, `npm run db:migrate`); dev data in `backend/seeders`.
 
-Frontend e2e tests (Cypress, specs in `frontend/e2e/cypress/integration/*.spec.js`):
+Frontend e2e tests (Playwright, specs in `frontend/e2e/tests/*.spec.js`):
 
 - `cd frontend && npm run test-setup` — test db :6543, backend :5001 (NODE_ENV=test, db recreated and seeded), frontend :5000. Rerun to reset state; `npm run test-setup:down` to tear down.
-- `npm run test` (GUI) or `npm run test:headless`
-- Single spec: `npm run test:headless -- --spec e2e/cypress/integration/timeLogs.spec.js`
-- CI ([.github/workflows/test.yaml](.github/workflows/test.yaml)) splits specs into 4 parallel groups; groups 1–3 list slow specs by name and group 4 runs all others, so new specs are picked up automatically. If you rename a listed spec, update the workflow.
+- `npm run test` (Playwright UI) or `npm run test:headless`; first time `npx playwright install chromium`. On macOS port 5000 is taken by AirPlay: `E2E_FRONTEND_PORT=5050 npm run test-setup` and `E2E_BASE_URL=http://localhost:5050 npm run test:headless`
+- Single spec: `npm run test:headless -- e2e/tests/timeLogs.spec.js` (add `-g "name"` for one test)
+- Tests share one db and run serially (`workers: 1`); CI ([.github/workflows/test.yaml](.github/workflows/test.yaml)) splits spec files into 4 Playwright shards, each with its own db. Traces and the HTML report of failed runs are uploaded as artifacts.
+- The app is under `/projekti/` in CI, so tests use paths without a leading slash (`page.goto('register')`, `api/...`).
 
 ## Architecture
 
@@ -49,7 +50,7 @@ Frontend e2e tests (Cypress, specs in `frontend/e2e/cypress/integration/*.spec.j
 
 - Redux (classic `connect`, redux-thunk) with one reducer per page in `src/reducers/` and action creators in `src/reducers/actions/`; API calls live in `src/services/` (axios, base from `src/utils/config.js`). UI is MUI.
 - Dev server proxies `/api` to the backend (`VITE_BACKEND_URL`); production build is served under `/projekti/`.
-- Cypress tests select elements by `data-cy` attributes; keep them when editing components. Login and data setup in tests go through custom commands in [frontend/e2e/cypress/support/index.js](frontend/e2e/cypress/support/index.js) (`cy.loginAsAdmin()`, etc.) which call the API directly; test users are in `e2e/cypress/common.js`.
+- E2e tests select elements by `data-cy` attributes; keep them when editing components. Specs import `test`/`expect` from [frontend/e2e/test.js](frontend/e2e/test.js) (auto-accepts confirm dialogs); login and data setup go through helpers in [frontend/e2e/helpers.js](frontend/e2e/helpers.js) (`loginAsAdmin(page)`, `createGroup(request, ...)`, etc.) which call the API directly; test users are in `e2e/common.js`. The app exposes `window.store` and uses the desktop date picker when `navigator.webdriver` is set.
 
 ## Deployment
 

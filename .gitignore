@@ -78,8 +78,6 @@ AGENTS.md
 *.conf
 *.ini
 **/toska_login
-cypress.env.json
-/cypress/
 
 
 # disallow secrects

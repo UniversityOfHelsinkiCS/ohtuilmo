@@ -67,55 +67,17 @@ jobs:
           cd backend
           npm run test
 
-  cypress:
-    name: cypress (group ${{ matrix.group }})
+  e2e:
+    name: e2e (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        group: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
 
-      # Specs are split into parallel groups by their run time. Groups 1-3 list the
-      # slow specs explicitly, group 4 runs every spec not listed, so new specs are
-      # always included.
-      - name: Select specs for this group
-        id: specs
-        env:
-          GROUP_1: topicListPage
-          GROUP_2: instructorReview groupManagementPage emailConfigurationPage
-          GROUP_3: timeLogs reviewQuestionsPage customerReviewQuestionsPage registrationQuestionsPage
-        run: |
-          dir=frontend/e2e/cypress/integration
-          case "${{ matrix.group }}" in
-            1) names="$GROUP_1" ;;
-            2) names="$GROUP_2" ;;
-            3) names="$GROUP_3" ;;
-            *)
-              listed=" $GROUP_1 $GROUP_2 $GROUP_3 "
-              names=""
-              for f in "$dir"/*.spec.js; do
-                name=$(basename "$f" .spec.js)
-                case "$listed" in
-                  *" $name "*) ;;
-                  *) names="$names $name" ;;
-                esac
-              done
-              ;;
-          esac
-          specs=""
-          for name in $names; do
-            if [ ! -f "$dir/$name.spec.js" ]; then
-              echo "Spec $dir/$name.spec.js listed in the workflow does not exist" >&2
-              exit 1
-            fi
-            specs="$specs,e2e/cypress/integration/$name.spec.js"
-          done
-          echo "Running specs: ${specs#,}"
-          echo "specs=${specs#,}" >> "$GITHUB_OUTPUT"
-
-      - name: Setup Node.js for initializing db with backend's npm scripts
+      - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -136,16 +98,27 @@ jobs:
       - name: Start backend, frontend and nginx
         run: docker compose -f compose.ci.yaml up backend frontend nginx -d
 
-      - name: Setup Node.js for initializing db with backend's npm scripts
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
+      - name: Install frontend dependencies and Playwright browser
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
 
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
+      - name: Wait for the app
+        run: timeout 120 sh -c 'until curl -fsS http://localhost:3000/projekti/ >/dev/null; do sleep 2; done'
+
+      - name: Run Playwright tests
+        working-directory: ./frontend
+        env:
+          E2E_BASE_URL: http://localhost:3000/projekti
+        run: npx playwright test --shard=${{ matrix.shard }}/4
+
+      - name: Upload report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          working-directory: ./frontend
-          config: baseUrl=http://localhost:3000/projekti
-          install-command: npm ci && npx cypress install
-          browser: chrome
-          spec: ${{ steps.specs.outputs.specs }}
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            frontend/playwright-report
+            frontend/e2e/test-results
+          retention-days: 7
