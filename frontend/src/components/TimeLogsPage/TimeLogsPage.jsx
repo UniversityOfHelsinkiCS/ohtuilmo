@@ -8,7 +8,7 @@ import TimeLogChart from './TimeLogChart'
 import { NotInGroupPlaceholder, NoSprintsPlaceholder } from '../common/Placeholders'
 import LoadingSpinner from '../common/LoadingSpinner'
 import { SprintSelect } from './SprintSelect'
-import { Typography } from '@mui/material'
+import { Container, Typography } from '@mui/material'
 import Error from '@mui/icons-material/Error'
 
 // services
@@ -21,6 +21,7 @@ import { minutesAndHoursFromString, hoursAndMinutesToMinutes } from '../../utils
 import './TimeLogsPage.css'
 import * as notificationActions from '../../reducers/actions/notificationActions'
 import timeLogsActions from '../../reducers/actions/timeLogsActions'
+import AIUsageContainer from './UserAIUsageContainer'
 
 const TimeLogsPage = (props) => {
   const {
@@ -174,54 +175,62 @@ const TimeLogsPage = (props) => {
   if (allSprints.length === 0) return <NoSprintsPlaceholder />
 
   return (
-    <div className="timelogs-responsive-grid">
-      <div className="timelogs-container-1">
-        <div className="timelogs-container-2">
-          <div className="timelogs-container-3">
-            <Typography variant="h4">Time Logs</Typography>
-            <SprintSelect
-              sprintNumber={selectedSprintNumber}
-              handleClickNextSprint={handleClickNextSprint}
-              handleClickPreviousSprint={handleClickPreviousSprint}
-              nextSprintButtonDisabled={nextSprint === undefined}
-              previousSprintButtonDisabled={previousSprint === undefined}
+    <Container>
+      <div className="timelogs-responsive-grid">
+        <div className="timelogs-container-1">
+          <div className="timelogs-container-2">
+            <div className="timelogs-container-3">
+              <Typography variant="h4">Time Logs</Typography>
+              <SprintSelect
+                sprintNumber={selectedSprintNumber}
+                handleClickNextSprint={handleClickNextSprint}
+                handleClickPreviousSprint={handleClickPreviousSprint}
+                nextSprintButtonDisabled={nextSprint === undefined}
+                previousSprintButtonDisabled={previousSprint === undefined}
+              />
+            </div>
+            <TimeLogForm
+              handleSubmit={handleSubmit}
+              disabled={selectedSprintNumber !== currentSprintNumber}
+              availableTags={availableTags}
             />
+            <div id="timelog-rows">
+              {isLogs(logsBySprint) &&
+                logsBySprint.map((log) => (
+                  <TimeLogRow
+                    key={log.id}
+                    log={log}
+                    handleDelete={() => handleDelete(log.id)}
+                    user={user}
+                  />
+                ))}
+              {!isLogs(logsBySprint) && allSprints.length > 0 && (
+                <p className="timelogs-not-available-message-and-icon">
+                  <Error />
+                  There are no time logs for this sprint.
+                </p>
+              )}
+            </div>
           </div>
-          <TimeLogForm
-            handleSubmit={handleSubmit}
-            disabled={selectedSprintNumber !== currentSprintNumber}
-            availableTags={availableTags}
-          />
-          <div id="timelog-rows">
-            {isLogs(logsBySprint) &&
-              logsBySprint.map((log) => (
-                <TimeLogRow
-                  key={log.id}
-                  log={log}
-                  handleDelete={() => handleDelete(log.id)}
-                  user={user}
-                />
-              ))}
-            {!isLogs(logsBySprint) && allSprints.length > 0 && (
-              <p className="timelogs-not-available-message-and-icon">
-                <Error />
-                There are no time logs for this sprint.
-              </p>
-            )}
+        </div>
+        <div className="timelogs-charts-container">
+          <div className="timelogs-chart-and-title-container">
+            <Typography variant="h5">Sprint Chart</Typography>
+            <TimeLogChart chartVariant="sprint" isShortProject={group.isShortProject} />
+          </div>
+          <div className="timelogs-chart-and-title-container">
+            <Typography variant="h5">Project Chart</Typography>
+            <TimeLogChart chartVariant="total" isShortProject={group.isShortProject} />
           </div>
         </div>
       </div>
-      <div className="timelogs-charts-container">
-        <div className="timelogs-chart-and-title-container">
-          <Typography variant="h5">Sprint Chart</Typography>
-          <TimeLogChart chartVariant="sprint" isShortProject={group.isShortProject} />
-        </div>
-        <div className="timelogs-chart-and-title-container">
-          <Typography variant="h5">Project Chart</Typography>
-          <TimeLogChart chartVariant="total" isShortProject={group.isShortProject} />
-        </div>
-      </div>
-    </div>
+      <AIUsageContainer
+        currentSprint={currentSprintNumber}
+        selected={selectedSprintNumber}
+        user={user}
+        groupId={group.id}
+      />
+    </Container>
   )
 }
 
