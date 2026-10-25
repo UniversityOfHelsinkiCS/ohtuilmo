@@ -71,6 +71,24 @@ const expectNotification = (page, text) => expect(page.locator('.notification'))
 
 const openStudent = (page, name) => page.getByText(name).first().click()
 
+const TEPPO = 'Timo *Teppo Tellervo Testaaja'
+const DONALD = 'Donald John Trump'
+
+const studentReview = (page, index) => page.locator(`[data-cy="instructor-review-${index}"]`)
+
+const problems = (page, index) => studentReview(page, index).locator('[data-cy="question-error"]')
+
+// collects the instructor reviews sent to the backend
+const sentReviews = (page) => {
+  const sent = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && /\/api\/instructorreview$/i.test(request.url())) {
+      sent.push(request)
+    }
+  })
+  return sent
+}
+
 test.describe('Instructor review page', () => {
   test.beforeAll(async ({ playwright }) => {
     await withRequest(playwright, initTests)
@@ -96,58 +114,92 @@ test.describe('Instructor review page', () => {
     await expect(page.locator('h2', { hasText: 'Donald John Trump' })).not.toHaveCount(0)
   })
 
-  test('requires text fields to be filled', async ({ page }) => {
+  test('tells what is missing without sending the review', async ({ page }) => {
+    const sent = sentReviews(page)
     await submitInstructorReview(page)
-    // submit not successfull, still on same page
+
     await expect(page).toHaveURL(/\/instructorreviewpage/)
-    await expectNotification(page, 'You must answer all questions')
+    await expectNotification(page, `Reviews are incomplete: ${TEPPO}, ${DONALD}`)
+    // the incomplete reviews are opened and every unanswered question is named
+    await expect(problems(page, 0)).toHaveCount(21)
+    await expect(problems(page, 1)).toHaveCount(21)
+    expect(sent).toHaveLength(0)
   })
 
-  test('shows error when text fields are under 5 characters long', async ({ page }) => {
-    await openStudent(page, 'Timo *Teppo Tellervo Testaaja')
+  test('tells if a text answer is too short', async ({ page }) => {
+    await openStudent(page, TEPPO)
+    await fillRemainingFields(page, 'Lorem ipsum', 3, 0)
     await answerTextInput(page, 'foo', 0)
 
     await submitInstructorReview(page)
-    await expectNotification(page, 'Text answers must be over 5 characters long.')
+    await expect(problems(page, 0)).toHaveCount(1)
+    await expect(problems(page, 0)).toHaveText('Write at least 5 characters')
   })
 
-  test('shows error when text fields are filled but there are other unfilled fields', async ({
-    page,
-  }) => {
-    await openStudent(page, 'Timo *Teppo Tellervo Testaaja')
-    await answerTextInput(
-      page,
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce at.',
-      0,
-    )
-
-    await submitInstructorReview(page)
-    await expectNotification(page, 'You must answer all questions')
-  })
-
-  test('shows error when number fields are filled but are higher than 5', async ({ page }) => {
-    await openStudent(page, 'Timo *Teppo Tellervo Testaaja')
+  test('tells if a grade is too high', async ({ page }) => {
+    await openStudent(page, TEPPO)
     await fillRemainingFields(page, 'Lorem ipsum', 3, 0)
     await answerNumberInput(page, 6, 0)
 
-    await openStudent(page, 'Donald John Trump')
-    await fillRemainingFields(page, 'Lorem ipsum', 3, 1)
-
     await submitInstructorReview(page)
-    await expectNotification(page, 'Grade can not be over 5.')
+    await expect(problems(page, 0)).toHaveText('Give a grade between 0 and 5')
   })
 
-  test('shows error when number fields are filled but are lower than 5', async ({ page }) => {
-    await openStudent(page, 'Timo *Teppo Tellervo Testaaja')
-
+  test('tells if a grade is negative', async ({ page }) => {
+    await openStudent(page, TEPPO)
     await fillRemainingFields(page, 'Lorem ipsum', 3, 0)
     await answerNumberInput(page, -1, 0)
 
-    await openStudent(page, 'Donald John Trump')
+    await submitInstructorReview(page)
+    await expect(problems(page, 0)).toHaveText('Give a grade between 0 and 5')
+  })
+
+  test('shows which reviews are complete', async ({ page }) => {
+    await expect(studentReview(page, 0).locator('[data-cy="review-incomplete"]')).toBeVisible()
+    await expect(studentReview(page, 1).locator('[data-cy="review-incomplete"]')).toBeVisible()
+
+    await openStudent(page, TEPPO)
+    await fillRemainingFields(page, 'Lorem ipsum', 4, 0)
+
+    await expect(studentReview(page, 0).locator('[data-cy="review-complete"]')).toBeVisible()
+    await expect(studentReview(page, 1).locator('[data-cy="review-incomplete"]')).toBeVisible()
+  })
+
+  test('answers are kept when the page is reloaded', async ({ page }) => {
+    await openStudent(page, TEPPO)
+    await answerTextInput(page, 'Hyvät arvosanat', 0)
+    await answerNumberInput(page, 4, 0)
+
+    const answeredGroupsFetched = page.waitForResponse((res) =>
+      res.url().includes('getAllAnsweredGroupId'),
+    )
+    await page.reload()
+    await answeredGroupsFetched
+    await openStudent(page, TEPPO)
+
+    await expect(textArea(page, 'Vertaisarvion arvosanat ja keskiarvo', 0).first()).toHaveValue(
+      'Hyvät arvosanat',
+    )
+    await expect(numberInput(page, 'Tekninen kontribuutio: arvosana', 0)).toHaveValue('4')
+  })
+
+  test('answers are kept and an error is shown if the session has expired', async ({ page }) => {
+    await openStudent(page, TEPPO)
+    await fillRemainingFields(page, 'Lorem ipsum', 5, 0)
+    await openStudent(page, DONALD)
     await fillRemainingFields(page, 'Lorem ipsum', 3, 1)
+    // an expired Shibboleth session redirects the request, which fails in the browser
+    await page.route(/\/api\/instructorreview$/i, (route) =>
+      route.request().method() === 'POST' ? route.abort() : route.continue(),
+    )
 
     await submitInstructorReview(page)
-    await expectNotification(page, 'Number answer can not be negative')
+    await expect(page.locator('.notification')).toContainText('Your session has expired')
+
+    await page.unrouteAll()
+    await page.reload()
+    await openStudent(page, DONALD)
+    await expect(numberInput(page, 'Tekninen kontribuutio: arvosana', 1)).toHaveValue('3')
   })
 
   test('submits instructor review when all fields are filled', async ({ page }) => {

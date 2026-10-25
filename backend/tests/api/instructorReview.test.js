@@ -8,7 +8,9 @@ const { student, otherStudent, instructor, createUsers, createGroup } = require(
 let ownGroup
 let otherGroup
 
-const sendReview = async (group) => {
+const validSheet = [{ answers: [{ type: 'text', answer: 'Hyvin toimiva ryhmä' }] }]
+
+const sendReview = async (group, answerSheet = validSheet) => {
   const login = await loginAs(app, instructor.student_number)
   return request(app)
     .post('/api/instructorreview')
@@ -18,10 +20,12 @@ const sendReview = async (group) => {
         group_id: group.id,
         group_name: group.name,
         user_id: instructor.student_number,
-        answer_sheet: [{ answers: [{ type: 'text', answer: 'Hyvin toimiva ryhmä' }] }],
+        answer_sheet: answerSheet,
       },
     })
 }
+
+const name = { first_names: 'Olli', last_name: 'Opiskelija' }
 
 describe('Instructor review', () => {
   test('can be given to an instructed group', async () => {
@@ -35,6 +39,33 @@ describe('Instructor review', () => {
     const res = await sendReview(otherGroup)
 
     expect(res.statusCode).toEqual(403)
+    expect(await db.InstructorReview.count()).toEqual(0)
+  })
+
+  test('validation errors name the student and the question', async () => {
+    const res = await sendReview(ownGroup, [
+      { name, answers: [{ type: 'text', header: 'Ohjaajan kommentit', answer: '' }] },
+    ])
+
+    expect(res.statusCode).toEqual(400)
+    expect(res.body.error).toEqual(
+      'Olli Opiskelija: Ohjaajan kommentit: You must answer all questions',
+    )
+  })
+
+  test('a missing answer is rejected with a message', async () => {
+    const res = await sendReview(ownGroup, [
+      { name, answers: [{ type: 'number', header: 'Arvosana' }] },
+    ])
+
+    expect(res.statusCode).toEqual(400)
+    expect(res.body.error).toEqual('Olli Opiskelija: Arvosana: You must answer all questions')
+  })
+
+  test('an answer sheet that is not a list is rejected', async () => {
+    const res = await sendReview(ownGroup, { foo: 'bar' })
+
+    expect(res.statusCode).toEqual(400)
     expect(await db.InstructorReview.count()).toEqual(0)
   })
 
