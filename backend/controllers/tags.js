@@ -30,7 +30,6 @@ const fetchFromDb = async () => {
 tagsRouter.get('/', checkLogin, async (req, res) => {
   try {
     const tags = await fetchFromDb()
-    console.log('tags: ', tags)
     return res.status(200).json(tags)
   } catch (error) {
     console.error('Error fetching tags:', error)

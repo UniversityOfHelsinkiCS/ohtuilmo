@@ -22,7 +22,6 @@ db.connect = () => {
   const ConfigurationModel = require('./configuration')
   const RegistrationQuestionSetModel = require('./registration_question_set')
   const ReviewQuestionSetModel = require('./review_question_set')
-
   const CustomerReviewQuestionSetModel = require('./customer_review_question_set')
 
   //const Review = require('./review')
@@ -38,6 +37,7 @@ db.connect = () => {
   const TagModel = require('./tag')
   const TimeLogModel = require('./time_log')
   const TimeLogTagModel = require('./time_log_tag')
+  const UserAIUsageModel = require('./user_ai_usage')
 
   const User = UserModel(sequelize, Sequelize)
   const Group = GroupModel(sequelize, Sequelize)
@@ -59,6 +59,7 @@ db.connect = () => {
   const Tag = TagModel(sequelize, Sequelize)
   const TimeLog = TimeLogModel(sequelize, Sequelize)
   const TimeLogTag = TimeLogTagModel(sequelize, Sequelize)
+  const UserAIUsage = UserAIUsageModel(sequelize, Sequelize)
 
   db.User = User
   db.Group = Group
@@ -83,6 +84,7 @@ db.connect = () => {
   db.Tag = Tag
   db.TimeLog = TimeLog
   db.TimeLogTag = TimeLogTag
+  db.UserAIUsage = UserAIUsage
 
   Group.belongsTo(Topic, {
     as: 'topic',
@@ -199,6 +201,19 @@ db.connect = () => {
     through: 'time_log_tags',
     foreignKey: 'time_log_id',
     as: 'tags',
+  })
+
+  Sprint.hasMany(UserAIUsage, {
+    foreignKey: 'sprint_id',
+  })
+  UserAIUsage.belongsTo(Sprint, {
+    foreignKey: 'sprint_id',
+  })
+  User.hasMany(UserAIUsage, {
+    foreignKey: 'student_number',
+  })
+  UserAIUsage.belongsTo(User, {
+    foreignKey: 'student_number',
   })
 
   db.Configuration.associate(db)
