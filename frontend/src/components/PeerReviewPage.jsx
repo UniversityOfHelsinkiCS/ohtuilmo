@@ -6,6 +6,7 @@ import './PeerReviewPage.css'
 import { getUser, extractCallingName } from '../utils/functions'
 import { NotInGroupPlaceholder, LoadingPlaceholder } from './common/Placeholders'
 import Markdown from './common/Markdown'
+import { validateAnswers } from './peerReviewValidation'
 
 // Actions
 import appActions from '../reducers/actions/appActions'
@@ -58,6 +59,9 @@ const removeDraft = (key) => {
 }
 
 class PeerReview extends React.Component {
+  // the problems are shown after the first submit and updated while answering
+  state = { showProblems: false }
+
   draftKey() {
     return draftKey(this.props.reviewConf, this.props.reviewRound)
   }
@@ -209,6 +213,20 @@ class PeerReview extends React.Component {
   Submit = async (event, answerSheet, reviewConf) => {
     event.preventDefault()
 
+    const problems = validateAnswers(answerSheet, this.props.peers)
+    if (Object.keys(problems).length > 0) {
+      const headers = Object.keys(problems).map(
+        (id) => this.props.questionObject.questions[id].header,
+      )
+      this.props.setError(`Answers are missing: ${headers.join(', ')}`, 10000)
+      this.setState({ showProblems: true }, () =>
+        document
+          .querySelector('.peer-review-box--error')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      )
+      return
+    }
+
     const answer = window.confirm('Answers can not be changed after submitting. Continue?')
     if (!answer) return
     try {
@@ -279,6 +297,7 @@ class PeerReview extends React.Component {
             answerSheet={answerSheet}
             updateAnswer={updateAnswer}
             updatePeerReview={updatePeerReview}
+            problems={this.state.showProblems ? validateAnswers(answerSheet, peers) : {}}
           />
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button
@@ -297,7 +316,14 @@ class PeerReview extends React.Component {
   }
 }
 
-export const Questions = ({ questions, peers, answerSheet, updateAnswer, updatePeerReview }) => {
+export const Questions = ({
+  questions,
+  peers,
+  answerSheet,
+  updateAnswer,
+  updatePeerReview,
+  problems = {},
+}) => {
   return (
     <div>
       {questions.map((question, questionId) => {
@@ -310,6 +336,7 @@ export const Questions = ({ questions, peers, answerSheet, updateAnswer, updateP
             answerSheet={answerSheet}
             updateAnswer={updateAnswer}
             updatePeerReview={updatePeerReview}
+            problem={problems[questionId]}
           />
         )
       })}
@@ -317,7 +344,24 @@ export const Questions = ({ questions, peers, answerSheet, updateAnswer, updateP
   )
 }
 
-const Question = ({ peers, question, questionId, answerSheet, updateAnswer, updatePeerReview }) => {
+const QuestionProblem = ({ problem }) =>
+  problem ? (
+    <p className="peer-review-box__problem" data-cy="question-error">
+      {problem}
+    </p>
+  ) : null
+
+const Question = ({
+  peers,
+  question,
+  questionId,
+  answerSheet,
+  updateAnswer,
+  updatePeerReview,
+  problem,
+}) => {
+  const boxClass = problem ? 'peer-review-box peer-review-box--error' : 'peer-review-box'
+
   if (questionId === undefined) {
     console.error('No questionId given')
     return (
@@ -333,8 +377,9 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
       temp = [0, 1, 2, 3, 4, 5]
     }
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <h3 className="peer-review-box__h3">{question.header}</h3>
+        <QuestionProblem problem={problem} />
         <Table size="small" className="peer-review-box__radio-button-table">
           <TableHead>
             <TableRow hover>
@@ -362,8 +407,9 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
       temp = ['Kyllä', 'Ei']
     }
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <h3 className="peer-review-box__h3">{question.header}</h3>
+        <QuestionProblem problem={problem} />
         <Table size="small" className="peer-review-box__radio-button-table">
           <TableHead>
             <TableRow hover>
@@ -384,8 +430,9 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
     )
   } else if (question.type === 'peerReview') {
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <h3 className="peer-review-box__h3">{question.header}</h3>
+        <QuestionProblem problem={problem} />
         <p>{question.description}</p>
 
         <PeerReviewTextFields
@@ -398,10 +445,11 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
     )
   } else if (question.type === 'text') {
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <div className="peer-review-box__text-question-container">
           <div>
             <h3 className="peer-review-box__h3">{question.header}</h3>
+            <QuestionProblem problem={problem} />
             <p>{question.description}</p>
 
             <TextField
@@ -418,8 +466,9 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
     )
   } else if (question.type === 'number') {
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <h3>{question.header}</h3>
+        <QuestionProblem problem={problem} />
         <p>{question.description}</p>
 
         <input
@@ -432,7 +481,7 @@ const Question = ({ peers, question, questionId, answerSheet, updateAnswer, upda
     )
   } else if (question.type === 'info') {
     return (
-      <div className="peer-review-box">
+      <div className={boxClass}>
         <h3>{question.header}</h3>
         <div className="peer-review__description">
           <Markdown>{question.description}</Markdown>

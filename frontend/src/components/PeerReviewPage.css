@@ -10,6 +10,15 @@
   border-radius: 25px;
 }
 
+.peer-review-box--error {
+  border-color: #d32f2f;
+}
+
+.peer-review-box__problem {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
 .peer-review-container__h1 {
   text-align: center;
 }
