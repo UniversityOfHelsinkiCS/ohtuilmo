@@ -6,6 +6,9 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
 import TextField from '@mui/material/TextField'
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -14,61 +17,82 @@ import { extractCallingName } from '../../utils/functions'
 const studentName = ({ first_names, last_name }) =>
   `${extractCallingName(first_names)} ${last_name}`
 
-// Admins can delete the peer review of a student, e.g. one sent by mistake. The deletion
-// can not be undone, so it has to be confirmed by typing the name of the student.
+// Admins can delete the peer review of a student while the peer review is open, so that
+// the student can answer again. The deletion can not be undone, so it has to be confirmed
+// by typing the name of the student.
 const DeletePeerReviews = ({ answers, round, groupName, onDelete }) => {
-  const [answerToDelete, setAnswerToDelete] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState(null)
   const [typedName, setTypedName] = useState('')
 
-  const name = answerToDelete ? studentName(answerToDelete.student) : ''
-  const nameMatches = typedName.trim() === name
+  const selected = answers.find((answer) => answer.id === selectedId)
+  const name = selected ? studentName(selected.student) : ''
+  const nameMatches = !!selected && typedName.trim() === name
 
   const close = () => {
-    setAnswerToDelete(null)
+    setOpen(false)
+    setSelectedId(null)
+    setTypedName('')
+  }
+
+  const select = (id) => {
+    setSelectedId(id)
     setTypedName('')
   }
 
   const confirm = () => {
-    const answer = answerToDelete
     close()
-    onDelete(answer)
+    onDelete(selected)
   }
 
   return (
-    <div className="delete-peer-reviews">
-      <span>Delete the review of:</span>
-      {answers.map((answer) => (
-        <Button
-          key={answer.id}
-          data-cy="delete-peer-review"
-          size="small"
-          color="error"
-          variant="outlined"
-          startIcon={<DeleteIcon />}
-          onClick={() => setAnswerToDelete(answer)}
-        >
-          {studentName(answer.student)}
-        </Button>
-      ))}
-      <Dialog open={answerToDelete !== null} onClose={close} data-cy="delete-peer-review-dialog">
-        <DialogTitle>Delete peer review permanently?</DialogTitle>
+    <div>
+      <Button
+        data-cy="delete-peer-review"
+        size="small"
+        color="error"
+        variant="outlined"
+        startIcon={<DeleteIcon />}
+        onClick={() => setOpen(true)}
+      >
+        Delete a peer review
+      </Button>
+      <Dialog open={open} onClose={close} data-cy="delete-peer-review-dialog">
+        <DialogTitle>Delete a peer review permanently</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            You are deleting the round {round} peer review of <strong>{name}</strong> in the group{' '}
-            <strong>{groupName}</strong>. The review can not be restored. If the peer review is
-            still open, the student can answer it again.
+            Choose the student whose round {round} peer review in the group{' '}
+            <strong>{groupName}</strong> is deleted. The review can not be restored, the student can
+            answer the peer review again.
           </DialogContentText>
-          <DialogContentText sx={{ mt: 2 }}>
-            Type <strong>{name}</strong> to confirm.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            fullWidth
-            margin="dense"
-            label="Student's name"
-            value={typedName}
-            onChange={(event) => setTypedName(event.target.value)}
-          />
+          <RadioGroup
+            value={selectedId ?? ''}
+            onChange={(event) => select(Number(event.target.value))}
+          >
+            {answers.map((answer) => (
+              <FormControlLabel
+                key={answer.id}
+                value={answer.id}
+                control={<Radio />}
+                label={studentName(answer.student)}
+              />
+            ))}
+          </RadioGroup>
+          {selected && (
+            <>
+              <DialogContentText sx={{ mt: 2 }}>
+                Type <strong>{name}</strong> to confirm.
+              </DialogContentText>
+              <TextField
+                autoFocus
+                fullWidth
+                margin="dense"
+                label="Student's name"
+                value={typedName}
+                onChange={(event) => setTypedName(event.target.value)}
+              />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={close}>Cancel</Button>

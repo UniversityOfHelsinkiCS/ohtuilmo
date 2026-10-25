@@ -60,7 +60,7 @@ const Answers = ({
   currentConfiguration,
   currentGroupID,
   viewMode,
-  isAdmin,
+  canDelete,
   onDelete,
 }) => {
   answers = answers.filter((group) => group.group.configurationId === currentConfiguration)
@@ -84,7 +84,7 @@ const Answers = ({
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 1st Round</h2>
                     </div>
-                    {isAdmin && (
+                    {canDelete(projectGroup.group, 1) && (
                       <DeletePeerReviews
                         answers={projectGroup.round1Answers}
                         round={1}
@@ -114,7 +114,7 @@ const Answers = ({
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 2nd Round</h2>
                     </div>
-                    {isAdmin && (
+                    {canDelete(projectGroup.group, 2) && (
                       <DeletePeerReviews
                         answers={projectGroup.round2Answers}
                         round={2}
@@ -512,6 +512,7 @@ const InstructorPage = (props) => {
     setError,
     setSuccess,
     isAdmin,
+    peerReview,
   } = props
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -568,6 +569,14 @@ const InstructorPage = (props) => {
     setSearchParams(params, { replace: true })
   }, [currentConfiguration, currentGroupID, viewMode, setSearchParams])
 
+  // only the reviews of the open peer review can be deleted, so that the students can
+  // answer again
+  const canDelete = (group, round) =>
+    isAdmin &&
+    peerReview.open &&
+    group.configurationId === peerReview.configurationId &&
+    round === peerReview.round
+
   const deletePeerReview = async (answer) => {
     try {
       await peerReviewService.remove(answer.id)
@@ -622,7 +631,7 @@ const InstructorPage = (props) => {
         currentConfiguration={currentConfiguration}
         currentGroupID={currentGroupID}
         viewMode={viewMode}
-        isAdmin={isAdmin}
+        canDelete={canDelete}
         onDelete={deletePeerReview}
       />
     </div>
@@ -637,6 +646,11 @@ const mapStateToProps = (state) => {
     groups: state.instructorPage.groups,
     currentGroupID: state.instructorPage.currentGroupID,
     isAdmin: !!state.login.user?.user?.admin,
+    peerReview: {
+      open: state.registrationManagement.peerReviewOpen,
+      configurationId: state.registrationManagement.peerReviewConf,
+      round: state.registrationManagement.peerReviewRound,
+    },
   }
 }
 
