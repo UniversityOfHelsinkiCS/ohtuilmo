@@ -14,6 +14,8 @@ import * as notificationActions from '../../reducers/actions/notificationActions
 
 import './InstructorPage.css'
 import StudentViewGroupAnswers from './StudentViewGroupAnswers'
+import DeletePeerReviews from './DeletePeerReviews'
+import { answerTo, questionsOf } from './answerSheets'
 
 //Services
 import peerReviewService from '../../services/peerReview'
@@ -54,7 +56,14 @@ const GroupStudents = ({ myGroup }) => {
   }
 }
 
-const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) => {
+const Answers = ({
+  answers,
+  currentConfiguration,
+  currentGroupID,
+  viewMode,
+  canDelete,
+  onDelete,
+}) => {
   answers = answers.filter((group) => group.group.configurationId === currentConfiguration)
 
   return (
@@ -76,6 +85,14 @@ const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) =>
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 1st Round</h2>
                     </div>
+                    {canDelete(projectGroup.group, 1) && (
+                      <DeletePeerReviews
+                        answers={projectGroup.round1Answers}
+                        round={1}
+                        groupName={projectGroup.group.name}
+                        onDelete={onDelete}
+                      />
+                    )}
                     {viewMode === 'students' ? (
                       <StudentViewGroupAnswers answers={projectGroup.round1Answers} />
                     ) : (
@@ -98,6 +115,14 @@ const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) =>
                       <h2>Peer Reviews&nbsp;</h2>
                       <h2 className="peer-review-subheader">/ 2nd Round</h2>
                     </div>
+                    {canDelete(projectGroup.group, 2) && (
+                      <DeletePeerReviews
+                        answers={projectGroup.round2Answers}
+                        round={2}
+                        groupName={projectGroup.group.name}
+                        onDelete={onDelete}
+                      />
+                    )}
                     {viewMode === 'students' ? (
                       <StudentViewGroupAnswers answers={projectGroup.round2Answers} />
                     ) : (
@@ -123,9 +148,7 @@ const Answers = ({ answers, currentConfiguration, currentGroupID, viewMode }) =>
 }
 
 const getQuestions = (answers) => {
-  // The same questions are found in every answer, so just grab the answers
-  // from the first one
-  return answers[0].answer_sheet.map((question) => {
+  return questionsOf(answers).map((question) => {
     return {
       type: question.type,
       questionHeader: question.questionHeader,
@@ -150,25 +173,25 @@ const GroupAnswers = ({ answers, students }) => {
         if (question.type === 'text' || question.type === 'number') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <TextNumberAnswer answers={answers} questionNumber={index} />
+              <TextNumberAnswer answers={answers} question={question} />
             </Question>
           )
         } else if (question.type === 'peerReview') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <PeerReviewAnswer answers={answers} questionNumber={index} />
+              <PeerReviewAnswer answers={answers} question={question} />
             </Question>
           )
         } else if (question.type === 'radio') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <RadioAnswer answers={answers} questionNumber={index} students={students} />
+              <RadioAnswer answers={answers} question={question} students={students} />
             </Question>
           )
         } else if (question.type === 'radioOneliner') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <RadioOneliner answers={answers} questionNumber={index} question={question} />
+              <RadioOneliner answers={answers} question={question} />
             </Question>
           )
         } else {
@@ -179,14 +202,11 @@ const GroupAnswers = ({ answers, students }) => {
   )
 }
 
-const PeerReviewAnswer = ({ answers, questionNumber }) => {
+const PeerReviewAnswer = ({ answers, question }) => {
   return (
     <div className="all-peer-reviews-container padding-left-18">
       {answers.map((member, index) => {
-        const peers =
-          member && member.answer_sheet && member.answer_sheet[questionNumber]
-            ? member.answer_sheet[questionNumber].peers
-            : null
+        const peers = answerTo(member, question)?.peers
         return (
           <div className="peer-review-and-author-container" key={`${member}-${index}`}>
             <p className="peer-review-author-text">
@@ -208,7 +228,7 @@ const PeerReviewAnswer = ({ answers, questionNumber }) => {
   )
 }
 
-const TextNumberAnswer = ({ answers, questionNumber }) => {
+const TextNumberAnswer = ({ answers, question }) => {
   return (
     <div className="padding-left-18">
       {answers.map((member, index) => {
@@ -218,7 +238,7 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
               {`${member.student.first_names} ${member.student.last_name}`}
               :&nbsp;
             </p>
-            <p>{member.answer_sheet[questionNumber].answer}</p>
+            <p>{answerTo(member, question)?.answer ?? '-'}</p>
           </div>
         )
       })}
@@ -226,7 +246,7 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
   )
 }
 
-const RadioOneliner = ({ answers, questionNumber, question }) => {
+const RadioOneliner = ({ answers, question }) => {
   const options = question.options
   return (
     <div className="padding-left-18">
@@ -247,7 +267,7 @@ const RadioOneliner = ({ answers, questionNumber, question }) => {
                 {options.map((_option, index) => {
                   return (
                     <TableCell key={`${answer.student.last_name}-${index}`}>
-                      {answer.answer_sheet[questionNumber].answer === index ? 'x' : ''}
+                      {answerTo(answer, question)?.answer === index ? 'x' : ''}
                     </TableCell>
                   )
                 })}
@@ -260,7 +280,7 @@ const RadioOneliner = ({ answers, questionNumber, question }) => {
   )
 }
 
-const RadioAnswer = ({ answers, questionNumber, students }) => {
+const RadioAnswer = ({ answers, question, students }) => {
   const peers = answers.map((member) => {
     return member.student.first_names + ' ' + member.student.last_name
   })
@@ -304,7 +324,7 @@ const RadioAnswer = ({ answers, questionNumber, students }) => {
                 <PeerRows
                   member={member}
                   answers={answers}
-                  questionNumber={questionNumber}
+                  question={question}
                   numberOfPeers={peers.length}
                 />
               </TableRow>
@@ -328,7 +348,7 @@ const PeerHeaders = ({ peers }) => {
 
 const sum = (arr) => arr.reduce((sum, value) => sum + value, 0)
 
-const PeerRows = ({ member, answers, questionNumber, numberOfPeers }) => {
+const PeerRows = ({ member, answers, question, numberOfPeers }) => {
   const allPeersRatings = new Array(numberOfPeers).fill({
     rating: '-',
     isSelf: false,
@@ -336,9 +356,10 @@ const PeerRows = ({ member, answers, questionNumber, numberOfPeers }) => {
 
   answers.forEach((answer, index) => {
     const peerFullName = `${answer.student.first_names} ${answer.student.last_name}`
-    if (answer.answer_sheet[questionNumber].peers[member] !== undefined) {
+    const peers = answerTo(answer, question)?.peers
+    if (peers && peers[member] !== undefined) {
       allPeersRatings[index] = {
-        rating: answer.answer_sheet[questionNumber].peers[member],
+        rating: peers[member],
         isSelf: peerFullName === member,
       }
     }
@@ -486,6 +507,9 @@ const InstructorPage = (props) => {
     setGroups,
     setCurrentGroupID,
     setError,
+    setSuccess,
+    isAdmin,
+    peerReview,
   } = props
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -542,6 +566,32 @@ const InstructorPage = (props) => {
     setSearchParams(params, { replace: true })
   }, [currentConfiguration, currentGroupID, viewMode, setSearchParams])
 
+  // only the reviews of the open peer review can be deleted, so that the students can
+  // answer again
+  const canDelete = (group, round) =>
+    isAdmin &&
+    peerReview.open &&
+    group.configurationId === peerReview.configurationId &&
+    round === peerReview.round
+
+  const deletePeerReview = async (answer) => {
+    try {
+      await peerReviewService.remove(answer.id)
+      const withoutDeleted = (roundAnswers) => roundAnswers.filter(({ id }) => id !== answer.id)
+      setAnswers(
+        answers.map((groupAnswers) => ({
+          ...groupAnswers,
+          round1Answers: withoutDeleted(groupAnswers.round1Answers),
+          round2Answers: withoutDeleted(groupAnswers.round2Answers),
+        })),
+      )
+      setSuccess('Peer review deleted')
+    } catch (err) {
+      console.error('error happened', err, err.response)
+      setError('Deleting the peer review failed')
+    }
+  }
+
   if (!answers || !currentConfiguration || !groups || !currentGroupID) {
     return <div className="flex-column-32-container">Loading</div>
   }
@@ -578,6 +628,8 @@ const InstructorPage = (props) => {
         currentConfiguration={currentConfiguration}
         currentGroupID={currentGroupID}
         viewMode={viewMode}
+        canDelete={canDelete}
+        onDelete={deletePeerReview}
       />
     </div>
   )
@@ -590,6 +642,12 @@ const mapStateToProps = (state) => {
     answers: state.instructorPage.answers,
     groups: state.instructorPage.groups,
     currentGroupID: state.instructorPage.currentGroupID,
+    isAdmin: !!state.login.user?.user?.admin,
+    peerReview: {
+      open: state.registrationManagement.peerReviewOpen,
+      configurationId: state.registrationManagement.peerReviewConf,
+      round: state.registrationManagement.peerReviewRound,
+    },
   }
 }
 
@@ -598,6 +656,7 @@ const mapDispatchToProps = {
   setCurrentConfiguration: instructorPageActions.setCurrentConfiguration,
   setAnswers: instructorPageActions.setAnswers,
   setError: notificationActions.setError,
+  setSuccess: notificationActions.setSuccess,
   setGroups: instructorPageActions.setGroups,
   setCurrentGroupID: instructorPageActions.setCurrentGroupID,
 }
