@@ -20,20 +20,25 @@ const validateAnswerSheet = (instructorReview) => {
     return 'All attributes must be defined.'
   }
 
-  let error = null
+  if (!Array.isArray(answer_sheet)) {
+    return 'Answer sheet must be a list of reviews.'
+  }
 
   for (let student of answer_sheet) {
+    if (!Array.isArray(student.answers)) {
+      return 'Every review must have a list of answers.'
+    }
     for (let question of student.answers) {
+      let error = null
       if (question.type === 'text') {
         error = validateTextAnswer(question)
-        if (error) {
-          return error
-        }
       } else if (question.type === 'number') {
         error = validateNumberAnswer(question)
-        if (error) {
-          return error
-        }
+      }
+      if (error) {
+        const name = student.name ? `${student.name.first_names} ${student.name.last_name}: ` : ''
+        const header = question.header ? `${question.header}: ` : ''
+        return `${name}${header}${error}`
       }
     }
   }
@@ -41,7 +46,7 @@ const validateAnswerSheet = (instructorReview) => {
 }
 
 const validateTextAnswer = (question) => {
-  if (question.answer.length === 0) {
+  if (typeof question.answer !== 'string' || question.answer.length === 0) {
     return 'You must answer all questions'
   }
   if (question.answer.length < 5) {
