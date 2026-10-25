@@ -15,6 +15,7 @@ import * as notificationActions from '../../reducers/actions/notificationActions
 import './InstructorPage.css'
 import StudentViewGroupAnswers from './StudentViewGroupAnswers'
 import DeletePeerReviews from './DeletePeerReviews'
+import { answerTo, questionsOf } from './answerSheets'
 
 //Services
 import peerReviewService from '../../services/peerReview'
@@ -147,9 +148,7 @@ const Answers = ({
 }
 
 const getQuestions = (answers) => {
-  // The same questions are found in every answer, so just grab the answers
-  // from the first one
-  return answers[0].answer_sheet.map((question) => {
+  return questionsOf(answers).map((question) => {
     return {
       type: question.type,
       questionHeader: question.questionHeader,
@@ -174,25 +173,25 @@ const GroupAnswers = ({ answers, students }) => {
         if (question.type === 'text' || question.type === 'number') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <TextNumberAnswer answers={answers} questionNumber={index} />
+              <TextNumberAnswer answers={answers} question={question} />
             </Question>
           )
         } else if (question.type === 'peerReview') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <PeerReviewAnswer answers={answers} questionNumber={index} />
+              <PeerReviewAnswer answers={answers} question={question} />
             </Question>
           )
         } else if (question.type === 'radio') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <RadioAnswer answers={answers} questionNumber={index} students={students} />
+              <RadioAnswer answers={answers} question={question} students={students} />
             </Question>
           )
         } else if (question.type === 'radioOneliner') {
           return (
             <Question key={index} title={question.questionHeader}>
-              <RadioOneliner answers={answers} questionNumber={index} question={question} />
+              <RadioOneliner answers={answers} question={question} />
             </Question>
           )
         } else {
@@ -203,14 +202,11 @@ const GroupAnswers = ({ answers, students }) => {
   )
 }
 
-const PeerReviewAnswer = ({ answers, questionNumber }) => {
+const PeerReviewAnswer = ({ answers, question }) => {
   return (
     <div className="all-peer-reviews-container padding-left-18">
       {answers.map((member, index) => {
-        const peers =
-          member && member.answer_sheet && member.answer_sheet[questionNumber]
-            ? member.answer_sheet[questionNumber].peers
-            : null
+        const peers = answerTo(member, question)?.peers
         return (
           <div className="peer-review-and-author-container" key={`${member}-${index}`}>
             <p className="peer-review-author-text">
@@ -232,7 +228,7 @@ const PeerReviewAnswer = ({ answers, questionNumber }) => {
   )
 }
 
-const TextNumberAnswer = ({ answers, questionNumber }) => {
+const TextNumberAnswer = ({ answers, question }) => {
   return (
     <div className="padding-left-18">
       {answers.map((member, index) => {
@@ -242,7 +238,7 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
               {`${member.student.first_names} ${member.student.last_name}`}
               :&nbsp;
             </p>
-            <p>{member.answer_sheet[questionNumber].answer}</p>
+            <p>{answerTo(member, question)?.answer ?? '-'}</p>
           </div>
         )
       })}
@@ -250,7 +246,7 @@ const TextNumberAnswer = ({ answers, questionNumber }) => {
   )
 }
 
-const RadioOneliner = ({ answers, questionNumber, question }) => {
+const RadioOneliner = ({ answers, question }) => {
   const options = question.options
   return (
     <div className="padding-left-18">
@@ -271,7 +267,7 @@ const RadioOneliner = ({ answers, questionNumber, question }) => {
                 {options.map((_option, index) => {
                   return (
                     <TableCell key={`${answer.student.last_name}-${index}`}>
-                      {answer.answer_sheet[questionNumber].answer === index ? 'x' : ''}
+                      {answerTo(answer, question)?.answer === index ? 'x' : ''}
                     </TableCell>
                   )
                 })}
@@ -284,7 +280,7 @@ const RadioOneliner = ({ answers, questionNumber, question }) => {
   )
 }
 
-const RadioAnswer = ({ answers, questionNumber, students }) => {
+const RadioAnswer = ({ answers, question, students }) => {
   const peers = answers.map((member) => {
     return member.student.first_names + ' ' + member.student.last_name
   })
@@ -328,7 +324,7 @@ const RadioAnswer = ({ answers, questionNumber, students }) => {
                 <PeerRows
                   member={member}
                   answers={answers}
-                  questionNumber={questionNumber}
+                  question={question}
                   numberOfPeers={peers.length}
                 />
               </TableRow>
@@ -352,7 +348,7 @@ const PeerHeaders = ({ peers }) => {
 
 const sum = (arr) => arr.reduce((sum, value) => sum + value, 0)
 
-const PeerRows = ({ member, answers, questionNumber, numberOfPeers }) => {
+const PeerRows = ({ member, answers, question, numberOfPeers }) => {
   const allPeersRatings = new Array(numberOfPeers).fill({
     rating: '-',
     isSelf: false,
@@ -360,9 +356,10 @@ const PeerRows = ({ member, answers, questionNumber, numberOfPeers }) => {
 
   answers.forEach((answer, index) => {
     const peerFullName = `${answer.student.first_names} ${answer.student.last_name}`
-    if (answer.answer_sheet[questionNumber].peers[member] !== undefined) {
+    const peers = answerTo(answer, question)?.peers
+    if (peers && peers[member] !== undefined) {
       allPeersRatings[index] = {
-        rating: answer.answer_sheet[questionNumber].peers[member],
+        rating: peers[member],
         isSelf: peerFullName === member,
       }
     }

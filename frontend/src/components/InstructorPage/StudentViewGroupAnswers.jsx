@@ -2,6 +2,7 @@ import React from 'react'
 import { Table, TableRow, TableCell, TableHead, TableBody } from '@mui/material'
 
 import './InstructorPage.css'
+import { answerTo } from './answerSheets'
 
 const PeerReviewAnswer = ({ answers, questionHeader, student }) => {
   const studentName = `${student.first_names} ${student.last_name}`
@@ -106,7 +107,7 @@ const calculateAverageRating = (member, answers) => {
   return ratings.length > 0 ? (sum / ratings.length).toFixed(2) : 'N/A'
 }
 
-const RadioOneLinerSimple = ({ answer, questionNumber, question }) => {
+const RadioOneLinerSimple = ({ answer, question }) => {
   const options = question.options
   return (
     <div className="padding-left-18">
@@ -125,7 +126,7 @@ const RadioOneLinerSimple = ({ answer, questionNumber, question }) => {
             {options.map((_option, index) => {
               return (
                 <TableCell key={`${answer.student.last_name}-${index}`}>
-                  {answer.answer_sheet[questionNumber].answer === index ? 'x' : ''}
+                  {answerTo(answer, question)?.answer === index ? 'x' : ''}
                 </TableCell>
               )
             })}
@@ -151,7 +152,7 @@ const StudentViewGroupAnswers = ({ answers }) => {
                   key={questionIndex}
                   answers={answers.map((roundAnswer) => ({
                     student: roundAnswer.student,
-                    peers: roundAnswer.answer_sheet[questionIndex].peers,
+                    peers: answerTo(roundAnswer, question)?.peers ?? {},
                   }))}
                   questionHeader={question.questionHeader}
                   student={studentAnswer.student}
@@ -162,7 +163,6 @@ const StudentViewGroupAnswers = ({ answers }) => {
                 <RadioOneLinerSimple
                   key={questionIndex}
                   answer={studentAnswer}
-                  questionNumber={questionIndex}
                   question={question}
                 />
               )
@@ -172,7 +172,7 @@ const StudentViewGroupAnswers = ({ answers }) => {
                   key={questionIndex}
                   answers={answers.map((roundAnswer) => ({
                     student: roundAnswer.student,
-                    peers: roundAnswer.answer_sheet[questionIndex].peers,
+                    peers: answerTo(roundAnswer, question)?.peers ?? {},
                   }))}
                   questionHeader={question.questionHeader}
                   student={studentAnswer.student}
