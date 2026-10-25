@@ -1,3 +1,7 @@
+# A project name of its own, so that tearing down the test setup does not remove the
+# network of the development setup (compose.yaml) that is in the same directory
+name: ohtuilmo-test
+
 services:
   test-db:
     image: postgres:16-alpine
