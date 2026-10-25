@@ -104,6 +104,13 @@ test.describe('Deleting a peer review', () => {
     await expect(confirmButton(page)).toBeDisabled()
 
     await dialog(page).getByLabel("Student's name").fill('Donald Trump')
+    // the theme makes button backgrounds transparent, the button must still be red and readable
+    await expect(confirmButton(page)).toHaveCSS('background-color', 'rgb(211, 47, 47)')
+    await expect(confirmButton(page)).toHaveCSS('color', 'rgb(255, 255, 255)')
+    await expect(dialog(page).getByRole('button', { name: 'Cancel' })).toHaveCSS(
+      'color',
+      'rgb(77, 77, 77)',
+    )
     await confirmButton(page).click()
 
     await expect(page.locator('.notification')).toContainText('Peer review deleted')

@@ -17,6 +17,14 @@ import { extractCallingName } from '../../utils/functions'
 const studentName = ({ first_names, last_name }) =>
   `${extractCallingName(first_names)} ${last_name}`
 
+// the theme makes the background of all buttons transparent, which would hide the white
+// text of this button
+const deleteButtonStyle = {
+  bgcolor: 'error.main',
+  '&:hover': { bgcolor: 'error.dark' },
+  '&.Mui-disabled': { bgcolor: 'action.disabledBackground' },
+}
+
 // Admins can delete the peer review of a student while the peer review is open, so that
 // the student can answer again. The deletion can not be undone, so it has to be confirmed
 // by typing the name of the student.
@@ -95,8 +103,16 @@ const DeletePeerReviews = ({ answers, round, groupName, onDelete }) => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={close}>Cancel</Button>
-          <Button color="error" variant="contained" disabled={!nameMatches} onClick={confirm}>
+          <Button color="inherit" onClick={close}>
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            sx={deleteButtonStyle}
+            disabled={!nameMatches}
+            onClick={confirm}
+          >
             Delete permanently
           </Button>
         </DialogActions>
