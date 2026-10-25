@@ -27,27 +27,27 @@ const validateAnswerSheet = (peerReview) => {
     if (question.type === 'text') {
       error = validateTextAnswer(question)
       if (error) {
-        return error
+        return `${question.questionHeader}: ${error}`
       }
     } else if (question.type === 'peerReview') {
       error = validatePeerReviewAnswer(question)
       if (error) {
-        return error
+        return `${question.questionHeader}: ${error}`
       }
     } else if (question.type === 'radio') {
       error = validateRadioAnswer(question)
       if (error) {
-        return error
+        return `${question.questionHeader}: ${error}`
       }
     } else if (question.type === 'radioOneliner') {
       error = validateRadioOneliner(question)
       if (error) {
-        return error
+        return `${question.questionHeader}: ${error}`
       }
     } else if (question.type === 'number') {
       error = validateNumberAnswer(question)
       if (error) {
-        return error
+        return `${question.questionHeader}: ${error}`
       }
     } else if (question.type !== 'info') {
       return 'Invalid question type in answer sheet'
@@ -100,6 +100,9 @@ const validateRadioAnswer = (question) => {
 }
 
 const validateRadioOneliner = (question) => {
+  if (question.optional) {
+    return null
+  }
   if (isNil(question.answer)) {
     return 'You must answer this question'
   }

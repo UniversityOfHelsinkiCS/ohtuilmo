@@ -119,7 +119,28 @@ describe('Peer review', () => {
     })
 
     expect(res.statusCode).toEqual(400)
-    expect(res.body.error).toEqual('You must answer all questions')
+    expect(res.body.error).toEqual('Arvio: You must answer all questions')
+  })
+
+  test('with an optional one line question unanswered is accepted', async () => {
+    await openPeerReview()
+
+    const res = await sendPeerReview({
+      answer_sheet: [
+        ...answerSheet,
+        {
+          type: 'radioOneliner',
+          id: 1,
+          questionHeader: 'Lisäkysymys',
+          optional: true,
+          answer: null,
+        },
+      ],
+      configuration_id: group.configurationId,
+      review_round: 1,
+    })
+
+    expect(res.statusCode).toEqual(201)
   })
 
   test('without an answer sheet array is rejected', async () => {

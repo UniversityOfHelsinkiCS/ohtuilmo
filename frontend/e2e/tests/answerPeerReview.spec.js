@@ -24,6 +24,28 @@ const numberInput = (page, header) => page.locator(`[data-cy="input_number_${hea
 
 const submit = (page) => page.getByRole('button', { name: 'Submit' }).click()
 
+const radio = (page, member, option) =>
+  page.locator(`[name="Ok and with option${member}"]`).nth(option)
+
+const peerText = (page, name) =>
+  page
+    .locator('.peer-review-box__text-field-container', { hasText: name })
+    .locator('textarea:not([aria-hidden="true"])')
+
+const questionError = (page, header) =>
+  page.locator('.peer-review-box', { hasText: header }).locator('[data-cy="question-error"]')
+
+// collects the peer reviews sent to the backend
+const sentReviews = (page) => {
+  const sent = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && /\/api\/peerReview$/i.test(request.url())) {
+      sent.push(request)
+    }
+  })
+  return sent
+}
+
 test.describe('Answering peer review', () => {
   test.beforeAll(async ({ playwright }) => {
     await withRequest(playwright, async (request) => {
@@ -59,6 +81,11 @@ test.describe('Answering peer review', () => {
           type: 'radio',
           options: ['Cant say', 'Not at all', 'Little', 'Decent', 'Good', 'Super'],
         },
+        {
+          header: 'Technical contribution',
+          description: 'Describe the contribution of each member',
+          type: 'peerReview',
+        },
       ])
       await setPeerReviewOneActive(request, 'Konfiguraatio 1', 1, 'Super nice review questions')
     })
@@ -93,29 +120,62 @@ test.describe('Answering peer review', () => {
     ).toBeVisible()
   })
 
-  test('shows an error if none of the fields is filled', async ({ page }) => {
+  test('tells what is missing without sending the answers', async ({ page }) => {
+    const sent = sentReviews(page)
     await submit(page)
-    await expect(page.getByText('You must answer all questions').first()).toBeVisible()
+
+    await expect(questionError(page, 'Ok and with option')).toHaveText(
+      'Choose an option for Teppo Testaaja, Donald Trump',
+    )
+    await expect(questionError(page, 'Technical contribution')).toHaveText(
+      'Write at least 7 characters about Teppo Testaaja, Donald Trump',
+    )
+    await expect(page.locator('.notification')).toContainText(
+      'Answers are missing: Ok and with option, Technical contribution',
+    )
+    expect(sent).toHaveLength(0)
   })
 
-  test('shows an error if only one of the fields is filled', async ({ page }) => {
-    await numberInput(page, 'Previous experiene in software developement').fill('123')
+  test('tells which members are missing an answer', async ({ page }) => {
+    await radio(page, 'Timo *Teppo Tellervo Testaaja', 3).click()
+    await peerText(page, 'Teppo Testaaja').fill('Did a lot of work')
+    await peerText(page, 'Donald Trump').fill('Short')
     await submit(page)
-    await expect(page.getByText('You must answer all questions').first()).toBeVisible()
+
+    await expect(questionError(page, 'Ok and with option')).toHaveText(
+      'Choose an option for Donald Trump',
+    )
+    await expect(questionError(page, 'Technical contribution')).toHaveText(
+      'Write at least 7 characters about Donald Trump',
+    )
   })
 
-  test('shows an error if not all of the radio button questions is answered', async ({ page }) => {
-    await numberInput(page, 'Previous experiene in software developement').fill('123')
-    await numberInput(page, 'Without option?').fill('123')
-    await page.locator('[name="Ok and with optionTimo *Teppo Tellervo Testaaja"]').nth(3).click()
+  test('tells if a number is not valid', async ({ page }) => {
+    await numberInput(page, 'Without option?').fill('-1')
     await submit(page)
-    await expect(page.getByText('You must answer all questions').first()).toBeVisible()
+
+    await expect(questionError(page, 'Without option?')).toHaveText(
+      'Give a number between 0 and 100000',
+    )
+  })
+
+  test('removes the messages when the answers are fixed', async ({ page }) => {
+    await submit(page)
+    await expect(questionError(page, 'Ok and with option')).toBeVisible()
+
+    await radio(page, 'Timo *Teppo Tellervo Testaaja', 2).click()
+    await radio(page, 'Donald John Trump', 5).click()
+
+    await expect(questionError(page, 'Ok and with option')).toHaveCount(0)
+    await expect(questionError(page, 'Technical contribution')).toBeVisible()
   })
 
   const fillAnswers = async (page) => {
     await numberInput(page, 'Previous experiene in software developement').fill('123')
     await numberInput(page, 'Without option?').fill('45')
     await page.locator('[name="Ok and with optionTimo *Teppo Tellervo Testaaja"]').nth(2).click()
+    await peerText(page, 'Teppo Testaaja').fill('Wrote most of the backend')
+    await peerText(page, 'Donald Trump').fill('Made the user interface')
   }
 
   const expectAnswersKept = async (page) => {
@@ -157,6 +217,8 @@ test.describe('Answering peer review', () => {
     await numberInput(page, 'Without option?').fill('123')
     await page.locator('[name="Ok and with optionTimo *Teppo Tellervo Testaaja"]').nth(2).click()
     await page.locator('[name="Ok and with optionDonald John Trump"]').nth(5).click()
+    await peerText(page, 'Teppo Testaaja').fill('Wrote most of the backend')
+    await peerText(page, 'Donald Trump').fill('Made the user interface')
     await submit(page)
     await expect(page.getByText('Peer review saved!').first()).toBeVisible()
   })
