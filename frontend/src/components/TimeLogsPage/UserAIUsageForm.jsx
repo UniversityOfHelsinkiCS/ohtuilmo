@@ -83,23 +83,99 @@ const usageOptions = {
   generating: 'Generoin tekoälyllä',
 }
 
-const ModelRow = ({ modelsUsed, setModelsUsed, changesDisabled }) => {
+export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
+  const sprintData = useSelector((state) => state.userAIUsage?.answersStudent)
+  const [modelsUsed, setModelsUsed] = useState(initialModelsUsed)
+  const [howUsed, setHowUsed] = useState(initialHowUsed)
   const [otherModels, setOtherModels] = useState('')
-  const handeModelsUsed = (event) => {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (sprintData) {
+      const currentSprintData = sprintData.filter((usage) => usage.sprintId === selectedSprint)[0]
+      if (currentSprintData) {
+        setHowUsed(currentSprintData.howUsed)
+        setModelsUsed(currentSprintData.modelsUsed)
+      } else {
+        setHowUsed(initialHowUsed)
+        setModelsUsed(initialModelsUsed)
+      }
+    }
+  }, [sprintData, selectedSprint])
+
+  const handleDirectSave = async (event) => {
+    let dataObject = {
+      sprint: selectedSprint,
+      howUsed,
+      modelsUsed,
+      groupId,
+    }
     const valueParts = event.target.value.split('-')
-    if (valueParts[1] !== 'otherExamples') {
+    if (Object.keys(questions).includes(valueParts[0])) {
+      const question = valueParts[0]
+      howUsed[question] = valueParts[1]
+      setHowUsed({ ...howUsed })
+      dataObject = {
+        ...dataObject,
+        howUsed: { ...howUsed },
+      }
+    } else if (valueParts[1] !== 'otherExamples') {
       modelsUsed[valueParts[0]] = valueParts[1] === 'used'
       setModelsUsed({ ...modelsUsed })
+      dataObject = {
+        ...dataObject,
+        modelsUsed: { ...modelsUsed },
+      }
     } else if (valueParts[1] === 'otherExamples') {
       setModelsUsed({
         ...modelsUsed,
-        otherExamples: modelsUsed.otherExamples.concat(`, ${valueParts[0]}`),
+        otherExamples: modelsUsed.otherExamples.concat(
+          modelsUsed.otherExamples.length > 0 ? `, ${valueParts[0]}` : valueParts[0],
+        ),
       })
+      setOtherModels('')
+      dataObject = {
+        ...dataObject,
+        modelsUsed: {
+          ...modelsUsed,
+          otherExamples: modelsUsed.otherExamples.concat(
+            modelsUsed.otherExamples.length > 0 ? `, ${valueParts[0]}` : valueParts[0],
+          ),
+        },
+      }
+    }
+
+    const currentSprintData = sprintData?.filter((usage) => usage.sprintId === selectedSprint)[0]
+    if (currentSprintData?.sprintId === selectedSprint) {
+      dispatch(updateAIUsageAnswers(dataObject, selectedSprint))
+    } else {
+      dispatch(createAIUsageAnswers(dataObject))
+    }
+  }
+  const handledSave = async () => {
+    const dataObject = {
+      sprint: selectedSprint,
+      howUsed,
+      modelsUsed,
+      groupId,
+    }
+    const currentSprintData = sprintData?.filter((usage) => usage.sprintId === selectedSprint)[0]
+    if (currentSprintData?.sprintId === selectedSprint) {
+      dispatch(updateAIUsageAnswers(dataObject, selectedSprint))
+    } else {
+      dispatch(createAIUsageAnswers(dataObject))
     }
   }
 
+  if (!modelsUsed || !howUsed) return <CircularProgress />
+
   return (
     <>
+      <Typography variant="h5">Sprintin aikainen tekoälyn käyttö</Typography>
+      <Markdown>
+        **Voit päivittää vastauksiasi koko sprintin ajan. Muista tallettaa valintasi.**
+      </Markdown>
+      <Typography variant="h6">{questionInfos['what']}</Typography>
       <Table>
         <TableHead>
           <TableRow>
@@ -116,24 +192,24 @@ const ModelRow = ({ modelsUsed, setModelsUsed, changesDisabled }) => {
                   <TableCell>{modelNames[model]}</TableCell>
                   <TableCell>
                     <Radio
-                      disabled={changesDisabled}
+                      disabled={selectedSprint !== currentSprint}
                       value={`${model}-notUsed`}
                       checked={!modelsUsed[model]}
                       slotProps={{
                         input: { 'aria-label': `${modelNames[model]}-not-used` },
                       }}
-                      onChange={handeModelsUsed}
+                      onChange={handleDirectSave}
                     />
                   </TableCell>
                   <TableCell>
                     <Radio
-                      disabled={changesDisabled}
+                      disabled={selectedSprint !== currentSprint}
                       value={`${model}-used`}
                       checked={modelsUsed[model]}
                       slotProps={{
                         input: { 'aria-label': `${modelNames[model]}-used` },
                       }}
-                      onChange={handeModelsUsed}
+                      onChange={handleDirectSave}
                     />
                   </TableCell>
                 </TableRow>
@@ -147,7 +223,7 @@ const ModelRow = ({ modelsUsed, setModelsUsed, changesDisabled }) => {
       <Typography sx={{ fontWeight: 800 }}>{modelsUsed['otherExamples']}</Typography>
       <br />
       <TextField
-        disabled={changesDisabled}
+        disabled={selectedSprint !== currentSprint}
         fullWidth
         value={otherModels}
         placeholder="Muita malleja"
@@ -160,133 +236,65 @@ const ModelRow = ({ modelsUsed, setModelsUsed, changesDisabled }) => {
         onChange={(event) => setOtherModels(event.target.value)}
       />
       <Button
-        disabled={changesDisabled || (modelsUsed.otherExamples + ` , ${otherModels}`).length > 250}
+        disabled={
+          selectedSprint !== currentSprint ||
+          (modelsUsed.otherExamples + ` , ${otherModels}`).length > 250
+        }
         sx={{ marginTop: 2, color: 'black', background: 'lightblue' }}
         value={`${otherModels}-otherExamples`}
-        onClick={handeModelsUsed}
+        onClick={handleDirectSave}
       >
         Lisää muita malleja
       </Button>
-    </>
-  )
-}
-
-const HowUsedRow = ({ howUsed, setHowUsed, changesDisabled }) => {
-  const handeHowUsed = (event) => {
-    const value = event.target.value.split('-')
-    const question = value[0]
-    howUsed[question] = value[1]
-    setHowUsed({ ...howUsed })
-  }
-  return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableCell sx={{ width: 250 }}>Kohde</TableCell>
-          {Object.keys(usageOptions).map((option) => {
-            return (
-              <TableCell sx={{ width: 150 }} key={option}>
-                {usageOptions[option]}
-              </TableCell>
-            )
-          })}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {Object.keys(howUsed).map((question) => {
-          return (
-            <TableRow key={question}>
-              <TableCell sx={{ width: 250 }}>{questions[question]}</TableCell>
-              <TableCell sx={{ width: 150 }}>
-                <Radio
-                  disabled={changesDisabled}
-                  onChange={handeHowUsed}
-                  value={`${question}-none`}
-                  checked={howUsed[question] === 'none'}
-                />
-              </TableCell>
-              <TableCell sx={{ width: 150 }}>
-                <Radio
-                  disabled={changesDisabled}
-                  onChange={handeHowUsed}
-                  value={`${question}-consult`}
-                  checked={howUsed[question] === 'consult'}
-                />
-              </TableCell>
-              <TableCell sx={{ width: 150 }}>
-                <Radio
-                  disabled={changesDisabled}
-                  onChange={handeHowUsed}
-                  value={`${question}-generate`}
-                  checked={howUsed[question] === 'generate'}
-                />
-              </TableCell>
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
-  )
-}
-
-export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
-  const sprintData = useSelector((state) => state.userAIUsage?.answersStudent)
-  const [modelsUsed, setModelsUsed] = useState(initialModelsUsed)
-  const [howUsed, setHowUsed] = useState(initialHowUsed)
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (sprintData) {
-      const currentSprintData = sprintData.filter((usage) => usage.sprintId === selectedSprint)[0]
-      if (currentSprintData) {
-        setHowUsed(currentSprintData.howUsed)
-        setModelsUsed(currentSprintData.modelsUsed)
-      } else {
-        setHowUsed(initialHowUsed)
-        setModelsUsed(initialModelsUsed)
-      }
-    }
-  }, [sprintData, selectedSprint])
-
-  const handledSave = async () => {
-    if (sprintData && sprintData.sprintId === selectedSprint) {
-      const dataToUpdate = {
-        sprint: selectedSprint,
-        howUsed,
-        modelsUsed,
-      }
-      dispatch(updateAIUsageAnswers(dataToUpdate, selectedSprint))
-    } else {
-      const dataToSave = {
-        sprint: selectedSprint,
-        howUsed,
-        modelsUsed,
-        groupId,
-      }
-      dispatch(createAIUsageAnswers(dataToSave))
-    }
-  }
-  if (!modelsUsed || !howUsed) return <CircularProgress />
-
-  return (
-    <>
-      <Typography variant="h5">Sprintin aikainen tekoälyn käyttö</Typography>
-      <Markdown>
-        **Voit päivittää vastauksiasi koko sprintin ajan. Muista tallettaa valintasi.**
-      </Markdown>
-      <Typography variant="h6">{questionInfos['what']}</Typography>
-      <ModelRow
-        modelsUsed={modelsUsed}
-        setModelsUsed={setModelsUsed}
-        changesDisabled={currentSprint !== selectedSprint}
-      />
       <Typography variant="h5">{questionInfos.main}</Typography>
       <Markdown>{questionInfos.mainInfo}</Markdown>
-      <HowUsedRow
-        howUsed={howUsed}
-        setHowUsed={setHowUsed}
-        changesDisabled={currentSprint !== selectedSprint}
-      />
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ width: 250 }}>Kohde</TableCell>
+            {Object.keys(usageOptions).map((option) => {
+              return (
+                <TableCell sx={{ width: 150 }} key={option}>
+                  {usageOptions[option]}
+                </TableCell>
+              )
+            })}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {Object.keys(howUsed).map((question) => {
+            return (
+              <TableRow key={question}>
+                <TableCell sx={{ width: 250 }}>{questions[question]}</TableCell>
+                <TableCell sx={{ width: 150 }}>
+                  <Radio
+                    disabled={selectedSprint !== currentSprint}
+                    onChange={handleDirectSave}
+                    value={`${question}-none`}
+                    checked={howUsed[question] === 'none'}
+                  />
+                </TableCell>
+                <TableCell sx={{ width: 150 }}>
+                  <Radio
+                    disabled={selectedSprint !== currentSprint}
+                    onChange={handleDirectSave}
+                    value={`${question}-consult`}
+                    checked={howUsed[question] === 'consult'}
+                  />
+                </TableCell>
+                <TableCell sx={{ width: 150 }}>
+                  <Radio
+                    disabled={selectedSprint !== currentSprint}
+                    onChange={handleDirectSave}
+                    value={`${question}-generate`}
+                    checked={howUsed[question] === 'generate'}
+                  />
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
       <br />
       <Button
         disabled={currentSprint !== selectedSprint}

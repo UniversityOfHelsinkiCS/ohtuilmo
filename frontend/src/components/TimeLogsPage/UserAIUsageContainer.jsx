@@ -1,22 +1,15 @@
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import {
-  fetchAIUsageAnswersStudent,
-  fetchAIUsageAnswersTeacher,
-} from '../../reducers/actions/userAIUsageActions'
+import { fetchAIUsageAnswersStudent } from '../../reducers/actions/userAIUsageActions'
 import { Container } from '@mui/material'
 import { UserAIUsageForm } from './UserAIUsageForm'
-import { UserAIUsageChart } from './UserAIUsageChart'
 
-const AIUsageContainer = ({ currentSprint, user, groupId, selected }) => {
+const AIUsageContainer = ({ currentSprint, groupId, selected }) => {
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchAIUsageAnswersStudent())
-    if (user.admin || user.instructor) {
-      dispatch(fetchAIUsageAnswersTeacher())
-    }
-  }, [dispatch, user.admin, user.instructor])
+  }, [dispatch])
 
   return (
     <Container>
@@ -27,7 +20,6 @@ const AIUsageContainer = ({ currentSprint, user, groupId, selected }) => {
           selectedSprint={selected}
         />
       }
-      {(user.admin || user.instructor) && <UserAIUsageChart />}
     </Container>
   )
 }
