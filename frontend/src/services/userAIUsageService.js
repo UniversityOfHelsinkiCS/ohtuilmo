@@ -12,7 +12,7 @@ const getAIUsageAnswersStudent = async () => {
     return response.data
   } catch (error) {
     console.error('Error getting student AI usage answers', error.response.data.error)
-    throw error
+    return error.response.data
   }
 }
 
@@ -24,7 +24,7 @@ const getAIUsageAnswersTeacher = async () => {
     return response.data
   } catch (error) {
     console.error('Error getting students` AI usage answers for teacher', error.response.data.error)
-    throw error
+    return error.response.data
   }
 }
 
@@ -36,7 +36,7 @@ const getAIUsageAnswersAdmin = async () => {
     return response.data
   } catch (error) {
     console.error('Error getting all AI usage answers', error.response.data.error)
-    throw error
+    return error.response.data
   }
 }
 
@@ -48,7 +48,7 @@ const postAIUsageAnswers = async (aiUsageEntry) => {
     return response.data
   } catch (error) {
     console.error('Error creating student AI usage answers', error.response.data.error)
-    throw error
+    return error.response.data
   }
 }
 
@@ -60,7 +60,7 @@ const putAIUsageAnswers = async (aiUsageEntry, id) => {
     return response.data
   } catch (error) {
     console.error('Error updating student AI usage answers', error.response.data.error)
-    throw error
+    return error.response.data
   }
 }
 
