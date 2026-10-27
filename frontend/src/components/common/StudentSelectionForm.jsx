@@ -25,8 +25,8 @@ export const StudentSelectionForm = ({
   return (
     <div>
       <div className="selector-container">
-        <div style={{ padding: 20 }}>
-          <Typography variant="caption">Select configuration</Typography>
+        <div style={{ paddingLeft: 10 }}>
+          <Typography>Select configuration:</Typography>
           <Select
             data-cy="configuration-selector"
             value={selectedConfigurationId}
@@ -35,6 +35,7 @@ export const StudentSelectionForm = ({
               handleGroupChange(0)
               handleStudentNumberChange(0)
             }}
+            sx={{ marginLeft: 1, minWidth: 300 }}
             MenuProps={{ style: { zIndex: 1600 } }}
           >
             <MenuItem key={0} className="configuration-menu-item" value={0} disabled>
@@ -53,8 +54,8 @@ export const StudentSelectionForm = ({
         </div>
 
         {selectedConfigurationId !== 0 && (
-          <div style={{ padding: 20 }}>
-            <Typography variant="caption">Select group</Typography>
+          <div style={{ paddingLeft: 10 }}>
+            <Typography>Select group:</Typography>
             <Select
               data-cy="group-selector"
               value={selectedGroupId}
@@ -62,6 +63,7 @@ export const StudentSelectionForm = ({
                 handleGroupChange(e.target.value)
                 handleStudentNumberChange(0)
               }}
+              sx={{ marginLeft: 1, minWidth: 300 }}
               MenuProps={{ style: { zIndex: 1600 } }}
             >
               <MenuItem key={0} className="group-menu-item" value={0} disabled>
@@ -79,8 +81,8 @@ export const StudentSelectionForm = ({
         )}
 
         {selectedGroupId !== 0 && (
-          <div style={{ padding: 20 }}>
-            <Typography variant="caption">Select student</Typography>
+          <div style={{ paddingLeft: 10 }}>
+            <Typography>Select student:</Typography>
             <Select
               data-cy="student-selector"
               value={selectedStudentNumber}
@@ -88,6 +90,7 @@ export const StudentSelectionForm = ({
                 handleStudentNumberChange(e.target.value)
               }}
               disabled={!selectedGroupId}
+              sx={{ marginLeft: 1, minWidth: 300 }}
               MenuProps={{ style: { zIndex: 1600 } }}
             >
               <MenuItem key={0} className="student-menu-item" value={0}>

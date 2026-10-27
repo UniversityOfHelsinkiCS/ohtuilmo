@@ -38,6 +38,7 @@ const TimeLogsPage = (props) => {
   const [allSprints, setAllSprints] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [availableTags, setAvailableTags] = useState([])
+  const [currentSprintObject, setCurrentSprintObject] = useState(null)
 
   const existingSprintNumbers = allSprints.map((sprint) => sprint.sprint).sort((a, b) => a - b)
 
@@ -107,11 +108,12 @@ const TimeLogsPage = (props) => {
 
       return today >= start && today <= end
     })
-
     if (currentSprintObject) {
       setCurrentSprintNumber(currentSprintObject.sprint)
       setSelectedSprintNumber(currentSprintObject.sprint)
+      setCurrentSprintObject(currentSprintObject.id)
     } else {
+      setCurrentSprintObject(null)
       setSelectedSprintNumber(
         existingSprintNumbers.length > 0 ? existingSprintNumbers.at(-1) : null,
       )
@@ -173,7 +175,6 @@ const TimeLogsPage = (props) => {
   if (isLoading) return <LoadingSpinner />
   if (!group) return <NotInGroupPlaceholder />
   if (allSprints.length === 0) return <NoSprintsPlaceholder />
-
   return (
     <Container>
       <div className="timelogs-responsive-grid">
@@ -224,12 +225,7 @@ const TimeLogsPage = (props) => {
           </div>
         </div>
       </div>
-      <AIUsageContainer
-        currentSprint={currentSprintNumber}
-        selected={selectedSprintNumber}
-        user={user}
-        groupId={group.id}
-      />
+      <AIUsageContainer currentSprintId={currentSprintObject} user={user} groupId={group.id} />
     </Container>
   )
 }

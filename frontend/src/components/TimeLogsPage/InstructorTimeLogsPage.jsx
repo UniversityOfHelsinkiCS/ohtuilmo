@@ -1,8 +1,8 @@
 import { withRouter } from '../../utils/withRouter'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { StudentSelectionForm } from '../common/StudentSelectionForm'
 import { TimeLogRow } from './TimeLogRow'
 import TimeLogChart from './TimeLogChart'
@@ -10,7 +10,7 @@ import LoadingSpinner from '../common/LoadingSpinner'
 import { SprintSelect } from './SprintSelect'
 import ConfirmationDialog from '../common/ConfirmationDialog'
 
-import { Typography } from '@mui/material'
+import { Container, Typography } from '@mui/material'
 import Button from '@mui/material/Button'
 
 import userService from '../../services/user'
@@ -23,6 +23,8 @@ import instructorTimeLogsService from '../../services/instructorTimeLogs'
 
 import * as notificationActions from '../../reducers/actions/notificationActions'
 import timeLogsActions from '../../reducers/actions/timeLogsActions'
+import { UserAIUsageChart } from './UserAIUsageChart'
+import { fetchAIUsageAnswersTeacher } from '../../reducers/actions/userAIUsageActions'
 
 const InstructorTimeLogsPage = (props) => {
   const {
@@ -57,9 +59,14 @@ const InstructorTimeLogsPage = (props) => {
   const [checkedTimeLogs, setCheckedTimeLogs] = useState([])
   const [moveToPreviousSprintConfirmOpen, setMoveToPreviousSprintConfirmOpen] = useState(false)
   const [moveToNextSprintConfirmOpen, setMoveToNextSprintConfirmOpen] = useState(false)
-
   const [isLoading, setIsLoading] = useState(true)
   const possibleSprintNumbers = allSprints.map((sprint) => sprint.sprint).sort((a, b) => a - b)
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (user.user.admin || user.user.instructor) {
+      dispatch(fetchAIUsageAnswersTeacher())
+    }
+  }, [dispatch, user.user])
 
   useEffect(() => {
     const fetchCurrentConfigurationId = async () => {
@@ -175,7 +182,13 @@ const InstructorTimeLogsPage = (props) => {
     if (selectedGroupId) params.group = selectedGroupId
     if (selectedStudentNumber) params.student = selectedStudentNumber
     setSearchParams(params, { replace: true })
-  }, [selectionInitialized, selectedConfigurationId, selectedGroupId, selectedStudentNumber])
+  }, [
+    selectionInitialized,
+    selectedConfigurationId,
+    selectedGroupId,
+    selectedStudentNumber,
+    setSearchParams,
+  ])
 
   useEffect(() => {
     const fetchGroupSprintSummary = async (group_id) => {
@@ -325,114 +338,129 @@ const InstructorTimeLogsPage = (props) => {
   }
 
   return (
-    <div className="timelogs-responsive-grid">
-      <div id="timelogs-container-1">
-        <div>
-          <StudentSelectionForm
-            configurations={allConfigurations}
-            selectedConfigurationId={selectedConfigurationId}
-            handleConfigurationChange={handleConfigurationChange}
-            groups={allGroups}
-            selectedGroupId={selectedGroupId}
-            handleGroupChange={handleGroupChange}
-            students={allStudents}
-            selectedStudentNumber={selectedStudentNumber}
-            handleStudentNumberChange={handleStudentChange}
-          />
-          {selectedGroupId !== 0 && (
+    <>
+      <Container>
+        <div className="timelogs-responsive-grid">
+          <div id="timelogs-container-1">
             <div>
-              <Typography variant="h5">Timelogs by {selectedGroup?.name}</Typography>
-              <SprintSelect
-                sprintNumber={selectedSprintNumber}
-                handleClickNextSprint={handleClickNextSprint}
-                handleClickPreviousSprint={handleClickPreviousSprint}
-                nextSprintButtonDisabled={nextSprint === undefined}
-                previousSprintButtonDisabled={previousSprint === undefined}
+              <StudentSelectionForm
+                configurations={allConfigurations}
+                selectedConfigurationId={selectedConfigurationId}
+                handleConfigurationChange={handleConfigurationChange}
+                groups={allGroups}
+                selectedGroupId={selectedGroupId}
+                handleGroupChange={handleGroupChange}
+                students={allStudents}
+                selectedStudentNumber={selectedStudentNumber}
+                handleStudentNumberChange={handleStudentChange}
               />
-              {allSprints && selectedSprintData && (
-                <p>
-                  {formatSprintDate(selectedSprintData.start_date)} -{' '}
-                  {formatSprintDate(selectedSprintData.end_date)}
-                </p>
+              {selectedGroupId !== 0 && (
+                <div>
+                  <Typography variant="h5">Timelogs by {selectedGroup?.name}</Typography>
+                  <SprintSelect
+                    sprintNumber={selectedSprintNumber}
+                    handleClickNextSprint={handleClickNextSprint}
+                    handleClickPreviousSprint={handleClickPreviousSprint}
+                    nextSprintButtonDisabled={nextSprint === undefined}
+                    previousSprintButtonDisabled={previousSprint === undefined}
+                  />
+                  {allSprints && selectedSprintData && (
+                    <p>
+                      {formatSprintDate(selectedSprintData.start_date)} -{' '}
+                      {formatSprintDate(selectedSprintData.end_date)}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-        <div id="timelog-rows">
-          {isLogs(logsByStudentAndSelectedSprint) && checkedTimeLogs.length > 0 && (
-            <div style={{ paddingTop: 25, paddingBottom: 25 }}>
-              <span className="text" style={{ paddingRight: 12 }}>
-                Move selected logs to
-              </span>
-              <Button
-                variant="outlined"
-                size="small"
-                id={'timelog-move-button-previous'}
-                className="timelog-move-button"
-                style={{ padding: '0 12px', marginRight: '12px' }}
-                disableRipple
-                onClick={() => setMoveToPreviousSprintConfirmOpen(true)}
-              >
-                previous sprint
-              </Button>
-              <ConfirmationDialog
-                title="Move Time Logs?"
-                open={moveToPreviousSprintConfirmOpen}
-                setOpen={setMoveToPreviousSprintConfirmOpen}
-                onConfirm={() => handleMoveTimeLog('previous')}
-              >
-                Move selected time logs to previous sprint?
-              </ConfirmationDialog>
-              <Button
-                variant="outlined"
-                size="small"
-                id={'timelog-move-button-next'}
-                className="timelog-move-button"
-                style={{ padding: '0 12px' }}
-                disableRipple
-                onClick={() => setMoveToNextSprintConfirmOpen(true)}
-              >
-                next sprint
-              </Button>
-              <ConfirmationDialog
-                title="Move Time Logs?"
-                open={moveToNextSprintConfirmOpen}
-                setOpen={setMoveToNextSprintConfirmOpen}
-                onConfirm={() => handleMoveTimeLog('next')}
-              >
-                Move selected time logs to next sprint?
-              </ConfirmationDialog>
-            </div>
-          )}
-          {isLogs(logsByStudentAndSelectedSprint) &&
-            logsByStudentAndSelectedSprint.map((log) => (
-              <TimeLogRow
-                key={log.id}
-                log={log}
-                handleDelete={() => handleDelete(log.id)}
-                handleTimeLogCheck={() => handleTimeLogCheck(log.id)}
-                isChecked={checkedTimeLogs.includes(log.id)}
-                user={user.user}
-              />
-            ))}
-          {!isLogs(logsByStudentAndSelectedSprint) && <p>No logs for the selected sprint.</p>}
-        </div>
-      </div>
-      <div id="chart-container">
-        {selectedGroupId !== 0 && (
-          <div className="timelogs-charts-container">
-            <div className="timelogs-chart-and-title-container">
-              <Typography variant="h5">Sprint Chart</Typography>
-              <TimeLogChart chartVariant="sprint" />
-            </div>
-            <div className="timelogs-chart-and-title-container">
-              <Typography variant="h5">Project Chart</Typography>
-              <TimeLogChart chartVariant="total" />
+            <div id="timelog-rows">
+              {isLogs(logsByStudentAndSelectedSprint) && checkedTimeLogs.length > 0 && (
+                <div style={{ paddingTop: 25, paddingBottom: 25 }}>
+                  <span className="text" style={{ paddingRight: 12 }}>
+                    Move selected logs to
+                  </span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    id={'timelog-move-button-previous'}
+                    className="timelog-move-button"
+                    style={{ padding: '0 12px', marginRight: '12px' }}
+                    disableRipple
+                    onClick={() => setMoveToPreviousSprintConfirmOpen(true)}
+                  >
+                    previous sprint
+                  </Button>
+                  <ConfirmationDialog
+                    title="Move Time Logs?"
+                    open={moveToPreviousSprintConfirmOpen}
+                    setOpen={setMoveToPreviousSprintConfirmOpen}
+                    onConfirm={() => handleMoveTimeLog('previous')}
+                  >
+                    Move selected time logs to previous sprint?
+                  </ConfirmationDialog>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    id={'timelog-move-button-next'}
+                    className="timelog-move-button"
+                    style={{ padding: '0 12px' }}
+                    disableRipple
+                    onClick={() => setMoveToNextSprintConfirmOpen(true)}
+                  >
+                    next sprint
+                  </Button>
+                  <ConfirmationDialog
+                    title="Move Time Logs?"
+                    open={moveToNextSprintConfirmOpen}
+                    setOpen={setMoveToNextSprintConfirmOpen}
+                    onConfirm={() => handleMoveTimeLog('next')}
+                  >
+                    Move selected time logs to next sprint?
+                  </ConfirmationDialog>
+                </div>
+              )}
+              {isLogs(logsByStudentAndSelectedSprint) &&
+                logsByStudentAndSelectedSprint.map((log) => (
+                  <TimeLogRow
+                    key={log.id}
+                    log={log}
+                    handleDelete={() => handleDelete(log.id)}
+                    handleTimeLogCheck={() => handleTimeLogCheck(log.id)}
+                    isChecked={checkedTimeLogs.includes(log.id)}
+                    user={user.user}
+                  />
+                ))}
+              {!isLogs(logsByStudentAndSelectedSprint) && <p>No logs for the selected sprint.</p>}
             </div>
           </div>
+          <div id="chart-container">
+            {selectedGroupId !== 0 && (
+              <div className="timelogs-charts-container">
+                <div className="timelogs-chart-and-title-container">
+                  <Typography variant="h5">Sprint Chart</Typography>
+                  <TimeLogChart chartVariant="sprint" />
+                </div>
+                <div className="timelogs-chart-and-title-container">
+                  <Typography variant="h5">Project Chart</Typography>
+                  <TimeLogChart chartVariant="total" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {(user.user.admin || user.user.instructor) && (
+          <>
+            <Typography variant="h4">Tekoälyn käyttö</Typography>
+            <UserAIUsageChart
+              groupId={selectedGroupId}
+              selectedSprint={selectedSprintNumber}
+              allSprints={allSprints}
+            />
+          </>
         )}
-      </div>
-    </div>
+      </Container>
+    </>
   )
 }
 
