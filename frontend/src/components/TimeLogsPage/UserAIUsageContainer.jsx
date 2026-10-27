@@ -4,7 +4,7 @@ import { fetchAIUsageAnswersStudent } from '../../reducers/actions/userAIUsageAc
 import { Container } from '@mui/material'
 import { UserAIUsageForm } from './UserAIUsageForm'
 
-const AIUsageContainer = ({ currentSprint, groupId, selected }) => {
+const AIUsageContainer = ({ currentSprintId, groupId }) => {
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -12,15 +12,7 @@ const AIUsageContainer = ({ currentSprint, groupId, selected }) => {
   }, [dispatch])
 
   return (
-    <Container>
-      {
-        <UserAIUsageForm
-          currentSprint={currentSprint}
-          groupId={groupId}
-          selectedSprint={selected}
-        />
-      }
-    </Container>
+    <Container>{<UserAIUsageForm currentSprintId={currentSprintId} groupId={groupId} />}</Container>
   )
 }
 

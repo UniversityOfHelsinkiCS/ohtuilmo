@@ -42,7 +42,19 @@ const initialHowUsed = {
   databases: 'none',
   infra: 'none',
 }
-
+const useHow = [
+  'understandCode',
+  'debugging',
+  'features',
+  'refactoring',
+  'codeReview',
+  'planning',
+  'uiPlanning',
+  'documentation',
+  'tests',
+  'databases',
+  'infra',
+]
 const modelNames = {
   claude: 'Claude Code',
   curreChat: 'CurreChat',
@@ -67,7 +79,7 @@ const questions = {
   debugging: 'Debuggaus tai ongelman paikantaminen',
   features: 'Uuden koodin (toiminnallisuuksien) luominen',
   refactoring: 'Olemassaolevan koodin muokkaaminen (esim. virheenkorjaus, toiminnan laajentaminen)',
-  codeReview: 'Koodikatselmointi (esim. \textit{pull requestien} arviointi)',
+  codeReview: 'Koodikatselmointi (esim. pull requestien arviointi)',
   planning:
     'Arkkitehtuurin suunnittelu ja toteutus (esim. käytetyt teknologiat, projektin rakenne)',
   uiPlanning: 'Käyttöliittymän suunnittelu ja toteutus',
@@ -83,7 +95,7 @@ const usageOptions = {
   generating: 'Generoin tekoälyllä',
 }
 
-export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
+export const UserAIUsageForm = ({ currentSprintId, groupId }) => {
   const sprintData = useSelector((state) => state.userAIUsage?.answersStudent)
   const [modelsUsed, setModelsUsed] = useState(initialModelsUsed)
   const [howUsed, setHowUsed] = useState(initialHowUsed)
@@ -92,76 +104,62 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
 
   useEffect(() => {
     if (sprintData) {
-      const currentSprintData = sprintData.filter((usage) => usage.sprintId === selectedSprint)[0]
+      const currentSprintData = sprintData.filter((usage) => usage.sprintId === currentSprintId)[0]
+      setHowUsed(initialHowUsed)
+      setModelsUsed(initialModelsUsed)
       if (currentSprintData) {
         setHowUsed(currentSprintData.howUsed)
         setModelsUsed(currentSprintData.modelsUsed)
-      } else {
-        setHowUsed(initialHowUsed)
-        setModelsUsed(initialModelsUsed)
       }
     }
-  }, [sprintData, selectedSprint])
+  }, [sprintData, currentSprintId])
 
   const handleDirectSave = async (event) => {
     let dataObject = {
-      sprint: selectedSprint,
+      sprint: currentSprintId,
       howUsed,
       modelsUsed,
       groupId,
     }
-    const valueParts = event.target.value.split('-')
-    if (Object.keys(questions).includes(valueParts[0])) {
-      const question = valueParts[0]
-      howUsed[question] = valueParts[1]
-      setHowUsed({ ...howUsed })
-      dataObject = {
-        ...dataObject,
-        howUsed: { ...howUsed },
-      }
-    } else if (valueParts[1] !== 'otherExamples') {
-      modelsUsed[valueParts[0]] = valueParts[1] === 'used'
-      setModelsUsed({ ...modelsUsed })
-      dataObject = {
-        ...dataObject,
-        modelsUsed: { ...modelsUsed },
-      }
-    } else if (valueParts[1] === 'otherExamples') {
-      setModelsUsed({
-        ...modelsUsed,
-        otherExamples: modelsUsed.otherExamples.concat(
-          modelsUsed.otherExamples.length > 0 ? `, ${valueParts[0]}` : valueParts[0],
-        ),
-      })
-      setOtherModels('')
-      dataObject = {
-        ...dataObject,
-        modelsUsed: {
+    if (event.target.value) {
+      const valueParts = event.target.value.split('-')
+      if (Object.keys(questions).includes(valueParts[0])) {
+        const question = valueParts[0]
+        howUsed[question] = valueParts[1]
+        setHowUsed({ ...howUsed })
+        dataObject = {
+          ...dataObject,
+          howUsed: { ...howUsed },
+        }
+      } else if (valueParts[1] !== 'otherExamples') {
+        modelsUsed[valueParts[0]] = valueParts[1] === 'used'
+        setModelsUsed({ ...modelsUsed })
+        dataObject = {
+          ...dataObject,
+          modelsUsed: { ...modelsUsed },
+        }
+      } else if (valueParts[1] === 'otherExamples' && valueParts[0].length > 0) {
+        setModelsUsed({
           ...modelsUsed,
           otherExamples: modelsUsed.otherExamples.concat(
             modelsUsed.otherExamples.length > 0 ? `, ${valueParts[0]}` : valueParts[0],
           ),
-        },
+        })
+        setOtherModels('')
+        dataObject = {
+          ...dataObject,
+          modelsUsed: {
+            ...modelsUsed,
+            otherExamples: modelsUsed.otherExamples.concat(
+              modelsUsed.otherExamples.length > 0 ? `, ${valueParts[0]}` : valueParts[0],
+            ),
+          },
+        }
       }
     }
-
-    const currentSprintData = sprintData?.filter((usage) => usage.sprintId === selectedSprint)[0]
-    if (currentSprintData?.sprintId === selectedSprint) {
-      dispatch(updateAIUsageAnswers(dataObject, selectedSprint))
-    } else {
-      dispatch(createAIUsageAnswers(dataObject))
-    }
-  }
-  const handledSave = async () => {
-    const dataObject = {
-      sprint: selectedSprint,
-      howUsed,
-      modelsUsed,
-      groupId,
-    }
-    const currentSprintData = sprintData?.filter((usage) => usage.sprintId === selectedSprint)[0]
-    if (currentSprintData?.sprintId === selectedSprint) {
-      dispatch(updateAIUsageAnswers(dataObject, selectedSprint))
+    const currentSprintData = sprintData?.filter((usage) => usage.sprintId === currentSprintId)[0]
+    if (currentSprintData?.sprintId === currentSprintId) {
+      dispatch(updateAIUsageAnswers(dataObject, currentSprintId))
     } else {
       dispatch(createAIUsageAnswers(dataObject))
     }
@@ -185,37 +183,39 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.keys(modelsUsed).map((model) => {
-            return (
-              model !== 'otherExamples' && (
-                <TableRow key={model}>
-                  <TableCell>{modelNames[model]}</TableCell>
-                  <TableCell>
-                    <Radio
-                      disabled={selectedSprint !== currentSprint}
-                      value={`${model}-notUsed`}
-                      checked={!modelsUsed[model]}
-                      slotProps={{
-                        input: { 'aria-label': `${modelNames[model]}-not-used` },
-                      }}
-                      onChange={handleDirectSave}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Radio
-                      disabled={selectedSprint !== currentSprint}
-                      value={`${model}-used`}
-                      checked={modelsUsed[model]}
-                      slotProps={{
-                        input: { 'aria-label': `${modelNames[model]}-used` },
-                      }}
-                      onChange={handleDirectSave}
-                    />
-                  </TableCell>
-                </TableRow>
+          {Object.keys(modelsUsed)
+            .sort()
+            .map((model) => {
+              return (
+                model !== 'otherExamples' && (
+                  <TableRow key={model}>
+                    <TableCell>{modelNames[model]}</TableCell>
+                    <TableCell>
+                      <Radio
+                        disabled={!currentSprintId}
+                        value={`${model}-notUsed`}
+                        checked={!modelsUsed[model]}
+                        slotProps={{
+                          input: { 'aria-label': `${modelNames[model]}-not-used` },
+                        }}
+                        onChange={handleDirectSave}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Radio
+                        disabled={!currentSprintId}
+                        value={`${model}-used`}
+                        checked={modelsUsed[model]}
+                        slotProps={{
+                          input: { 'aria-label': `${modelNames[model]}-used` },
+                        }}
+                        onChange={handleDirectSave}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
               )
-            )
-          })}
+            })}
         </TableBody>
       </Table>
       <br />
@@ -223,7 +223,7 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
       <Typography sx={{ fontWeight: 800 }}>{modelsUsed['otherExamples']}</Typography>
       <br />
       <TextField
-        disabled={selectedSprint !== currentSprint}
+        disabled={!currentSprintId}
         fullWidth
         value={otherModels}
         placeholder="Muita malleja"
@@ -236,10 +236,7 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
         onChange={(event) => setOtherModels(event.target.value)}
       />
       <Button
-        disabled={
-          selectedSprint !== currentSprint ||
-          (modelsUsed.otherExamples + ` , ${otherModels}`).length > 250
-        }
+        disabled={!currentSprintId || (modelsUsed.otherExamples + ` , ${otherModels}`).length > 250}
         sx={{ marginTop: 2, color: 'black', background: 'lightblue' }}
         value={`${otherModels}-otherExamples`}
         onClick={handleDirectSave}
@@ -262,13 +259,13 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.keys(howUsed).map((question) => {
+          {useHow.map((question) => {
             return (
               <TableRow key={question}>
                 <TableCell sx={{ width: 250 }}>{questions[question]}</TableCell>
                 <TableCell sx={{ width: 150 }}>
                   <Radio
-                    disabled={selectedSprint !== currentSprint}
+                    disabled={!currentSprintId}
                     onChange={handleDirectSave}
                     value={`${question}-none`}
                     checked={howUsed[question] === 'none'}
@@ -276,7 +273,7 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
                 </TableCell>
                 <TableCell sx={{ width: 150 }}>
                   <Radio
-                    disabled={selectedSprint !== currentSprint}
+                    disabled={!currentSprintId}
                     onChange={handleDirectSave}
                     value={`${question}-consult`}
                     checked={howUsed[question] === 'consult'}
@@ -284,7 +281,7 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
                 </TableCell>
                 <TableCell sx={{ width: 150 }}>
                   <Radio
-                    disabled={selectedSprint !== currentSprint}
+                    disabled={!currentSprintId}
                     onChange={handleDirectSave}
                     value={`${question}-generate`}
                     checked={howUsed[question] === 'generate'}
@@ -297,10 +294,10 @@ export const UserAIUsageForm = ({ currentSprint, groupId, selectedSprint }) => {
       </Table>
       <br />
       <Button
-        disabled={currentSprint !== selectedSprint}
+        disabled={!currentSprintId}
         sx={{ marginBottom: 1, color: 'black', background: 'lightblue' }}
         aria-label="Tallenna tekoälyvastaukset"
-        onClick={() => handledSave()}
+        onClick={handleDirectSave}
       >
         Tallenna tekoälyvastaukset
       </Button>
