@@ -104,15 +104,18 @@ const App = (props) => {
     const handleLogin = async () => {
       try {
         await loginUser()
+        return true
       } catch (err) {
         console.error(err)
+        return false
       }
     }
 
     const fetchData = async () => {
       updateIsLoading(true)
-      if (!isCustomerReviewPage) await handleLogin()
-      if (user) await handleGroupInit()
+      const loggedIn = !isCustomerReviewPage && (await handleLogin())
+      // user is the value from page load, so it is null on the first visit
+      if (loggedIn || user) await handleGroupInit()
       await fetchRegistrationManagementData()
       updateIsLoading(false)
     }

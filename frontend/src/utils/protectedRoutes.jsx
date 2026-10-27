@@ -17,20 +17,20 @@ const Unauthorized = () => (
   </div>
 )
 
-export const AdminRoute = connect(mapStateToProps)(({ render: Component, user }) => {
+export const AdminRoute = connect(mapStateToProps)(({ render, user }) => {
   if (user) {
-    return user.user.admin ? <Component /> : <Unauthorized />
+    return user.user.admin ? render() : <Unauthorized />
   }
   return null
 })
 
-export const InstructorRoute = connect(mapStateToProps)(({ render: Component, user }) => {
+export const InstructorRoute = connect(mapStateToProps)(({ render, user }) => {
   if (user) {
-    return user.user.instructor || user.user.admin ? <Component /> : <Unauthorized />
+    return user.user.instructor || user.user.admin ? render() : <Unauthorized />
   }
   return null
 })
 
-export const LoginRoute = connect(mapStateToProps)(({ render: Component, user }) => {
-  return user ? <Component /> : null
+export const LoginRoute = connect(mapStateToProps)(({ render, user }) => {
+  return user ? render() : null
 })
