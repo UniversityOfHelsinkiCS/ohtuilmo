@@ -1,5 +1,6 @@
 const usersRouter = require('express').Router()
 const db = require('../models/index')
+const { Op } = require('sequelize')
 const { checkLogin, checkInstructor } = require('../middleware')
 
 usersRouter.put('/consent/:studentNumber', checkLogin, async (req, res) => {
@@ -31,7 +32,7 @@ usersRouter.put('/:studentNumber', checkLogin, async (req, res) => {
   const { studentNumber } = req.params
 
   if (req.user.id !== studentNumber) {
-    return res.status(401).json({ error: 'student numbers not matching' })
+    return res.status(403).json({ error: 'student numbers not matching' })
   }
 
   if (!email) {
@@ -55,13 +56,37 @@ usersRouter.put('/:studentNumber', checkLogin, async (req, res) => {
   }
 })
 
-// If the user is an instructor, the get all of the student numbers for
-// the students in the current configuration, then gets the corresponding
-// users from the database.
 usersRouter.get('/', checkInstructor, async (req, res) => {
   if (req.user.admin || req.user.instructor) {
+    let configurations = {}
     try {
-      const users = await db.User.findAll()
+      // For instructor, get just students they have access to.
+      if (req.user.instructor) {
+        const groups = await db.Group.findAll({
+          where: { instructorId: req.user.id },
+          include: [
+            {
+              as: 'students',
+              model: db.User,
+              attributes: ['student_number'],
+              through: { attributes: [] },
+            },
+          ],
+        })
+
+        const studentNumberList = groups
+          .flatMap((group) => group.students)
+          .map((user) => user.dataValues.student_number)
+
+        configurations = {
+          student_number: {
+            [Op.in]: studentNumberList,
+          },
+        }
+      }
+      const users = await db.User.findAll({
+        where: configurations,
+      })
       res.status(200).json(users)
     } catch (error) {
       console.log(error)
