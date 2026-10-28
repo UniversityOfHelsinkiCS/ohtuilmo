@@ -1,7 +1,7 @@
 'use strict'
 
 const up = async (query, Sequelize) => {
-  await query.createTable('user_ai_usage', {
+  await query.createTable('user_ai_usages', {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -45,7 +45,7 @@ const up = async (query, Sequelize) => {
 }
 
 const down = async (query) => {
-  await query.dropTable('user_ai_usage')
+  await query.dropTable('user_ai_usages')
 }
 
 module.exports = {
