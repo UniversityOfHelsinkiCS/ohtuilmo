@@ -34,7 +34,7 @@ describe("User's email", () => {
       .set('Authorization', `bearer ${login.token}`)
       .send({ email: 'uusi@posti.fi' })
 
-    expect(res.statusCode).toEqual(401)
+    expect(res.statusCode).toEqual(403)
     const user = await db.User.findByPk(String(otherUser.student_number))
     expect(user.email).toEqual(otherUser.email)
   })
