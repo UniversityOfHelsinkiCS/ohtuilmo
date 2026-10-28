@@ -27,10 +27,17 @@ const validateInput = (modelsUsed, howUsed, sprint, groupId) => {
       ((key !== 'otherExamples' && typeof modelsUsed[key] === 'boolean') ||
         (key === 'otherExamples' && typeof modelsUsed[key] === 'string')),
   )
+  const ohtherNotTooLong = modelsUsed.otherExamples.length < 255
   const correctHows = Object.keys(howUsed).every(
     (key) => modelHow.includes(key) && options.includes(howUsed[key]),
   )
-  return typeof sprint === 'number' && typeof groupId === 'number' && correctModels && correctHows
+  return (
+    typeof sprint === 'number' &&
+    typeof groupId === 'number' &&
+    correctModels &&
+    correctHows &&
+    ohtherNotTooLong
+  )
 }
 
 const computeSprintStatistics = (sprintAIUSageData, sprintId) => {
