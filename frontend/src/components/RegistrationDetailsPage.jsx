@@ -20,6 +20,7 @@ import {
   FormControl,
   FormControlLabel,
   Button,
+  Container,
 } from '@mui/material'
 import CourseMaterial from './common/CourseMaterial'
 import SortableTopicList from './SortableTopicList'
@@ -256,15 +257,17 @@ class RegistrationDetailsPage extends React.Component {
 
     if (groupDetails) {
       return (
-        <div className="registration-details-container">
-          <GroupDetails groupDetails={groupDetails} />
-          <PeerReviewInfo
-            peerReviewOpen={peerReviewOpen}
-            peerReviewRound={peerReviewRound}
-            groupDetails={groupDetails}
-          />
-          <ResearchConsent student={user} />
-        </div>
+        <Container>
+          <div className="registration-details-container">
+            <GroupDetails groupDetails={groupDetails} />
+            <PeerReviewInfo
+              peerReviewOpen={peerReviewOpen}
+              peerReviewRound={peerReviewRound}
+              groupDetails={groupDetails}
+            />
+            <ResearchConsent student={user} />
+          </div>
+        </Container>
       )
     }
 
