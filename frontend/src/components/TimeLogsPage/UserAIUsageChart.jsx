@@ -44,7 +44,6 @@ export const UserAIUsageChart = ({ selectedSprint, groupId, allSprints }) => {
     (stats) => stats.sprintId === selected?.id.toString(),
   )[0]
   if (!aiStatistics || !groupId) return null
-  console.log('jwjw')
   const dataModelsUsed = Object.keys(aiStatistics.modelsUsedNumbers).map((key) => {
     return {
       name: modelNames[key],
@@ -59,7 +58,6 @@ export const UserAIUsageChart = ({ selectedSprint, groupId, allSprints }) => {
       consult: aiStatistics.howUsedNumbers[key]['consult'],
     }
   })
-  console.log('how', dataHowUsed)
   return (
     <>
       <ResponsiveContainer width="100%" aspect={2} style={{ maxWidth: 800, minHeight: 800 }}>
