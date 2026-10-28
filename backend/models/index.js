@@ -203,14 +203,8 @@ db.connect = () => {
     as: 'tags',
   })
 
-  Sprint.hasMany(UserAIUsage, {
-    foreignKey: 'sprint_id',
-  })
   UserAIUsage.belongsTo(Sprint, {
     foreignKey: 'sprint_id',
-  })
-  User.hasMany(UserAIUsage, {
-    foreignKey: 'student_number',
   })
   UserAIUsage.belongsTo(User, {
     foreignKey: 'student_number',
