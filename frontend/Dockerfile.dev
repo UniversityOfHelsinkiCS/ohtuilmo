@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/nodejs-24
+FROM docker.io/library/node:24-alpine
 
 ENV NODE_ENV="development"
 USER root

@@ -1,7 +1,10 @@
-FROM registry.access.redhat.com/ubi8/nodejs-24
+FROM docker.io/library/node:24-alpine
 
 USER root
 ENV NODE_ENV="development"
+
+# curl is used by the test setup in compose.local-test.yaml
+RUN apk add --no-cache curl
 
 WORKDIR /usr/src/app
 
