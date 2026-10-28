@@ -114,7 +114,7 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
   const user = req.user
   let configurations = {}
   if (!user.instructor && !user.admin) {
-    return res.status('403').json({ error: 'Forbidden access' })
+    return res.status('403').json({ error: 'Forbidden' })
   }
   if (user.instructor) {
     const groups = await db.Group.findAll({
@@ -130,7 +130,7 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
       ],
     })
     if (!groups) {
-      return res.status('404').json({ error: 'No groups found for the instructor.' })
+      return res.status('404').json({ error: 'Not found' })
     }
     const studentNumberList = groups
       .flatMap((group) => group.students)
@@ -156,7 +156,7 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
       raw: true,
     })
     if (!usersAIUsage) {
-      return res.status(404).json({ error: 'AI usage not found' })
+      return res.status(404).json({ error: 'Not found' })
     }
 
     const groupedBySprint = groupBy(usersAIUsage, 'sprintId')
@@ -217,7 +217,10 @@ userAIUsageRouter.post('/', checkLogin, async (req, res) => {
     }
 
     const todaysDate = new Date()
-    if (todaysDate < sprintRecord.startDate && todaysDate > sprintRecord.endDate) {
+    if (
+      todaysDate <= sprintRecord.dataValues.startDate &&
+      todaysDate >= sprintRecord.dataArray.endDate
+    ) {
       return res.status(403).json({ error: 'Forbidden, sprint is already closed.' })
     }
 
@@ -265,7 +268,7 @@ userAIUsageRouter.put('/:id', checkLogin, async (req, res) => {
     })
 
     if (!studentOfGroup) {
-      return res.status(403).json({ error: 'Forbidden, not a member of the group' })
+      return res.status(403).json({ error: 'Forbidden' })
     }
 
     const sprintRecord = await db.Sprint.findOne({
@@ -276,10 +279,13 @@ userAIUsageRouter.put('/:id', checkLogin, async (req, res) => {
       },
     })
     if (!sprintRecord) {
-      return res.status(404).json({ error: 'Sprint not found.' })
+      return res.status(404).json({ error: 'Not found' })
     }
     const todaysDate = new Date()
-    if (todaysDate < sprintRecord.startDate && todaysDate > sprintRecord.endDate) {
+    if (
+      todaysDate <= sprintRecord.dataValues.startDate &&
+      todaysDate >= sprintRecord.dataArray.endDate
+    ) {
       return res.status(403).json({ error: 'Forbidden, sprint is already closed.' })
     }
 
