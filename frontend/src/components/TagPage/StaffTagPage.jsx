@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 
 import LoadingSpinner from '../common/LoadingSpinner'
-import { Typography } from '@mui/material'
+import { Container, Typography } from '@mui/material'
 import CheckboxMultiSelect from '../common/CheckboxMultiSelect'
 import { StudentSelectionForm } from '../common/StudentSelectionForm'
 import TagUsageLineChart from './TagUsageLineChart'
@@ -207,58 +207,59 @@ const StaffTagPage = (props) => {
   if (isLoading) return <LoadingSpinner />
 
   return (
-    <div className="tagpage-container">
-      <div className="tagpage-selection-container">
-        <StudentSelectionForm
-          configurations={allConfigurations}
-          selectedConfigurationId={selectedConfigurationId}
-          handleConfigurationChange={handleConfigurationChange}
-          groups={allGroups}
-          selectedGroupId={selectedGroupId}
-          handleGroupChange={handleGroupChange}
-          students={allStudents}
-          selectedStudentNumber={selectedStudentNumber}
-          handleStudentNumberChange={handleStudentChange}
-        />
-        <Typography variant="h5">Tags</Typography>
-        <CheckboxMultiSelect
-          allItems={availableTags}
-          selectedItems={selectedTags}
-          setSelectedItems={setSelectedTags}
-        />
+    <Container>
+      <div className="tagpage-container">
+        <div className="tagpage-selection-container">
+          <StudentSelectionForm
+            configurations={allConfigurations}
+            selectedConfigurationId={selectedConfigurationId}
+            handleConfigurationChange={handleConfigurationChange}
+            groups={allGroups}
+            selectedGroupId={selectedGroupId}
+            handleGroupChange={handleGroupChange}
+            students={allStudents}
+            selectedStudentNumber={selectedStudentNumber}
+            handleStudentNumberChange={handleStudentChange}
+          />
+          <Typography variant="h5">Tags</Typography>
+          <CheckboxMultiSelect
+            allItems={availableTags}
+            selectedItems={selectedTags}
+            setSelectedItems={setSelectedTags}
+          />
+        </div>
+        <div className="tagpage-charts-container">
+          {selectedTags.length === 0 ? (
+            <Typography variant="body1">No tags selected.</Typography>
+          ) : (
+            <>
+              <Typography variant="h5">
+                {!selectedConfigurationId
+                  ? 'Select configuration'
+                  : !selectedGroupId
+                    ? 'Select a group'
+                    : selectedStudentNumber === 0
+                      ? `Tag usage for ${selectedGroup?.name ?? ''}`
+                      : `Tag usage for ${selectedStudent?.first_names ?? ''} ${selectedStudent?.last_name ?? ''}`}
+              </Typography>
+              <TagUsageBarChart
+                allTags={availableTags}
+                selectedTags={selectedTags}
+                tagData={selectedStudentNumber === 0 ? groupTagData : studentTagData}
+                tagColors={tagColors}
+              />
+              <TagUsageLineChart
+                allSprints={allSprints}
+                allTags={availableTags}
+                selectedTags={selectedTags}
+                tagData={selectedStudentNumber === 0 ? groupTagData : studentTagData}
+                tagColors={tagColors}
+              />
+            </>
+          )}
+        </div>
       </div>
-      <div className="tagpage-charts-container">
-        {selectedTags.length === 0 ? (
-          <Typography variant="body1">No tags selected.</Typography>
-        ) : (
-          <>
-            <Typography variant="h5">
-              {!selectedConfigurationId
-                ? 'Select configuration'
-                : !selectedGroupId
-                  ? 'Select a group'
-                  : selectedStudentNumber === 0
-                    ? `Tag usage for ${selectedGroup?.name ?? ''}`
-                    : `Tag usage for ${selectedStudent?.first_names ?? ''} ${selectedStudent?.last_name ?? ''}`}
-            </Typography>
-            <TagUsageBarChart
-              allTags={availableTags}
-              selectedTags={selectedTags}
-              tagData={selectedStudentNumber === 0 ? groupTagData : studentTagData}
-              tagColors={tagColors}
-            />
-
-            <TagUsageLineChart
-              allSprints={allSprints}
-              allTags={availableTags}
-              selectedTags={selectedTags}
-              tagData={selectedStudentNumber === 0 ? groupTagData : studentTagData}
-              tagColors={tagColors}
-            />
-          </>
-        )}
-      </div>
-    </div>
+    </Container>
   )
 }
 

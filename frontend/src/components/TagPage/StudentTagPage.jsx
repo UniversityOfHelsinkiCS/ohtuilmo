@@ -1,9 +1,9 @@
 import { withRouter } from '../../utils/withRouter'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 
 import LoadingSpinner from '../common/LoadingSpinner'
-import { Typography } from '@mui/material'
+import { Typography, Container } from '@mui/material'
 import { NotInGroupPlaceholder, NoSprintsPlaceholder } from '../common/Placeholders'
 import CheckboxMultiSelect from '../common/CheckboxMultiSelect'
 import TagUsageLineChart from './TagUsageLineChart'
@@ -78,38 +78,39 @@ const StudentTagPage = (props) => {
   if (allSprints.length === 0) return <NoSprintsPlaceholder />
 
   return (
-    <div className="tagpage-container">
-      <div className="tagpage-selection-container">
-        <Typography variant="h5">Tags</Typography>
-        <CheckboxMultiSelect
-          allItems={availableTags}
-          selectedItems={selectedTags}
-          setSelectedItems={setSelectedTags}
-        />
+    <Container>
+      <div className="tagpage-container">
+        <div className="tagpage-selection-container">
+          <Typography variant="h5">Tags</Typography>
+          <CheckboxMultiSelect
+            allItems={availableTags}
+            selectedItems={selectedTags}
+            setSelectedItems={setSelectedTags}
+          />
+        </div>
+        <div className="tagpage-charts-container">
+          {selectedTags.length === 0 ? (
+            <Typography variant="body1">No tags selected.</Typography>
+          ) : (
+            <>
+              <TagUsageBarChart
+                allTags={availableTags}
+                selectedTags={selectedTags}
+                tagData={studentTags}
+                tagColors={tagColors}
+              />
+              <TagUsageLineChart
+                allSprints={allSprints}
+                allTags={availableTags}
+                selectedTags={selectedTags}
+                tagData={studentTags}
+                tagColors={tagColors}
+              />
+            </>
+          )}
+        </div>
       </div>
-      <div className="tagpage-charts-container">
-        {selectedTags.length === 0 ? (
-          <Typography variant="body1">No tags selected.</Typography>
-        ) : (
-          <>
-            <TagUsageBarChart
-              allTags={availableTags}
-              selectedTags={selectedTags}
-              tagData={studentTags}
-              tagColors={tagColors}
-            />
-
-            <TagUsageLineChart
-              allSprints={allSprints}
-              allTags={availableTags}
-              selectedTags={selectedTags}
-              tagData={studentTags}
-              tagColors={tagColors}
-            />
-          </>
-        )}
-      </div>
-    </div>
+    </Container>
   )
 }
 

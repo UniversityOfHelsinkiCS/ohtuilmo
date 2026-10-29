@@ -7,6 +7,7 @@ import * as notificationActions from '../reducers/actions/notificationActions'
 import './LandingPage.css'
 
 import registrationActions from '../reducers/actions/registrationActions'
+import { Container } from '@mui/material'
 
 class LandingPage extends React.Component {
   componentDidMount() {
@@ -27,16 +28,18 @@ class LandingPage extends React.Component {
 
   render() {
     return (
-      <div className="landingpage-container">
-        <h2 className="landingpage-header">Home</h2>
-        {this.props.projectOpen ? (
-          <Link to="/register" data-cy="registrationlink">
-            Submit your registration
-          </Link>
-        ) : (
-          <div className="landingpage-message">{this.props.projectMessage}</div>
-        )}
-      </div>
+      <Container>
+        <div className="landingpage-container">
+          <h2 className="landingpage-header">Home</h2>
+          {this.props.projectOpen ? (
+            <Link to="/register" data-cy="registrationlink">
+              Submit your registration
+            </Link>
+          ) : (
+            <div className="landingpage-message">{this.props.projectMessage}</div>
+          )}
+        </div>
+      </Container>
     )
   }
 }

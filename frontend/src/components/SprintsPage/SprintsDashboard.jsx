@@ -1,10 +1,10 @@
 import { withRouter } from '../../utils/withRouter'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import { CustomDatePicker } from '../common/CustomDatePicker'
 import Button from '@mui/material/Button'
-import { Table, TableRow, TableHead, TableBody, TableCell } from '@mui/material'
+import { Table, TableRow, TableHead, TableBody, TableCell, Container } from '@mui/material'
 import sprintService from '../../services/sprints'
 import { NotInGroupPlaceholder } from '../common/Placeholders'
 import './SprintsDashboard.css'
@@ -72,7 +72,7 @@ const SprintsPage = (props) => {
   if (!group) return <NotInGroupPlaceholder />
 
   return (
-    <div className="sprints-container">
+    <Container>
       <Typography variant="h4">Add new sprint</Typography>
       <div className="spacer"></div>
       <div className="add-sprint-container">
@@ -174,7 +174,7 @@ const SprintsPage = (props) => {
           </Table>
         </div>
       )}
-    </div>
+    </Container>
   )
 }
 

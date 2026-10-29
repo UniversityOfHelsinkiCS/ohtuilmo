@@ -7,7 +7,7 @@ import tagService from '../../services/tags'
 import './TagsDashboard.css'
 import { connect } from 'react-redux'
 
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
+import { Container, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
 import * as notificationActions from '../../reducers/actions/notificationActions'
 import ConfirmationDialog from '../common/ConfirmationDialog'
 
@@ -72,74 +72,76 @@ const TagsPage = (props) => {
   }
 
   return (
-    <div className="tags-container">
-      <Typography variant="h4">Add new tag</Typography>
-      <div className="spacer"></div>
-      <div className="add-tag-container">
-        <TextField
-          className="tag-title"
-          id="tagTitle"
-          label="Tag Title"
-          aria-describedby="tagName"
-          type="text"
-          value={tagTitle}
-          onChange={(e) => setTagTitle(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          variant="outlined"
-        />
-      </div>
-      <Button
-        variant="contained"
-        className="button"
-        onClick={handleAddTag}
-        style={{
-          backgroundColor: '#188433',
-          color: 'white',
-          borderRadius: '8px',
-          boxShadow: 'none',
-          fontWeight: 'bolder',
-        }}
-      >
-        Add Tag
-      </Button>
-      <div className="tag-list-container">
-        <Table size="small">
-          <TableHead>
-            <TableRow hover>
-              <TableCell colSpan={2}>Tags</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {allTags.map((tag) => (
-              <TableRow key={tag.id} hover>
-                <TableCell>{tag.title}</TableCell>
-                <TableCell>
-                  <Button
-                    onClick={() => {
-                      setTagToDelete(tag.id)
-                      setConfirmOpen(true)
-                    }}
-                    className="delete-tag-button"
-                    variant="contained"
-                    color="secondary"
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <ConfirmationDialog
-          title="Delete Tag?"
-          open={confirmOpen}
-          setOpen={setConfirmOpen}
-          onConfirm={() => handleDeleteTag(tagToDelete)}
+    <Container>
+      <div className="tags-container">
+        <Typography variant="h4">Add new tag</Typography>
+        <div className="spacer"></div>
+        <div className="add-tag-container">
+          <TextField
+            className="tag-title"
+            id="tagTitle"
+            label="Tag Title"
+            aria-describedby="tagName"
+            type="text"
+            value={tagTitle}
+            onChange={(e) => setTagTitle(e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+            variant="outlined"
+          />
+        </div>
+        <Button
+          variant="contained"
+          className="button"
+          onClick={handleAddTag}
+          style={{
+            backgroundColor: '#188433',
+            color: 'white',
+            borderRadius: '8px',
+            boxShadow: 'none',
+            fontWeight: 'bolder',
+          }}
         >
-          Delete this tag? It cannot be restored.
-        </ConfirmationDialog>
+          Add Tag
+        </Button>
+        <div className="tag-list-container">
+          <Table size="small">
+            <TableHead>
+              <TableRow hover>
+                <TableCell colSpan={2}>Tags</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {allTags.map((tag) => (
+                <TableRow key={tag.id} hover>
+                  <TableCell>{tag.title}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => {
+                        setTagToDelete(tag.id)
+                        setConfirmOpen(true)
+                      }}
+                      className="delete-tag-button"
+                      variant="contained"
+                      color="secondary"
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <ConfirmationDialog
+            title="Delete Tag?"
+            open={confirmOpen}
+            setOpen={setConfirmOpen}
+            onConfirm={() => handleDeleteTag(tagToDelete)}
+          >
+            Delete this tag? It cannot be restored.
+          </ConfirmationDialog>
+        </div>
       </div>
-    </div>
+    </Container>
   )
 }
 
