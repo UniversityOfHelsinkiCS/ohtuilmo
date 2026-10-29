@@ -254,7 +254,6 @@ class RegistrationDetailsPage extends React.Component {
       peerReviewRound,
       user,
     } = this.props
-
     if (groupDetails) {
       return (
         <Container>
@@ -265,6 +264,7 @@ class RegistrationDetailsPage extends React.Component {
               peerReviewRound={peerReviewRound}
               groupDetails={groupDetails}
             />
+            <CourseMaterial />
             <ResearchConsent student={user} />
           </div>
         </Container>
@@ -272,7 +272,7 @@ class RegistrationDetailsPage extends React.Component {
     }
 
     if (ownRegistrations.length === 0) {
-      return <h2>loading...</h2>
+      return <h2>Ei rekisteröintitietoja</h2>
     }
 
     const projectReg = ownRegistrations.find(
@@ -296,13 +296,8 @@ class RegistrationDetailsPage extends React.Component {
           Registration date: {formatDate(createdAt)}
         </Typography>
         <CourseMaterial />
-        <PeerReviewInfo
-          peerReviewOpen={peerReviewOpen}
-          peerReviewRound={peerReviewRound}
-          groupDetails={groupDetails}
-        />
-        <GroupDetails groupDetails={groupDetails} />
         <UserDetails student={student} />
+        <ResearchConsent student={user} />
         <PreferredTopics topics={preferred_topics} />
         <RegistrationAnswers questions={questions} />
       </div>
