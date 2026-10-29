@@ -1,11 +1,9 @@
 import { withRouter } from '../../utils/withRouter'
-import React, { Fragment, useContext } from 'react'
+import { Fragment, useContext } from 'react'
 import { connect } from 'react-redux'
 
 import { updateRole } from '../../services/dev'
 import * as userActions from '../../reducers/actions/userActions'
-import myGroupActions from '../../reducers/actions/myGroupActions'
-import registrationmanagementActions from '../../reducers/actions/registrationManagementActions'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Button from '@mui/material/Button'
@@ -24,17 +22,11 @@ import {
 } from './MenuItemLists'
 import './NavigationBar.css'
 import { ColorModeContext } from '../../context/ColorModeContext'
+import { useNavigate } from 'react-router-dom'
 
-const NavigationBar = ({
-  group,
-  user,
-  loginUser,
-  initializeMyGroup,
-  fetchRegistrationManagement,
-  history,
-  logout,
-}) => {
+const NavigationBar = ({ group, user, loginUser, history, logout }) => {
   const { mode: theme, setMode: setTheme } = useContext(ColorModeContext)
+  const navigate = useNavigate()
   const getAppropriateMenuItemList = () => {
     if (user === null) {
       return { items: regularItems(history) }
@@ -104,8 +96,8 @@ const NavigationBar = ({
     try {
       console.log('New role:', await updateRole(role))
       await loginUser()
-      await initializeMyGroup()
-      await fetchRegistrationManagement()
+      navigate('/')
+      window.location.reload()
     } catch (e) {
       console.error('Failed to update role:', e)
     }
@@ -209,8 +201,6 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = {
   loginUser: userActions.loginUser,
-  initializeMyGroup: myGroupActions.initializeMyGroup,
-  fetchRegistrationManagement: registrationmanagementActions.fetchRegistrationManagement,
 }
 
 const ConnectedNavigationBar = connect(mapStateToProps, mapDispatchToProps)(NavigationBar)
