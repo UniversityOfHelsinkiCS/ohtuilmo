@@ -122,6 +122,16 @@ Alternatively `npm run test:docker` runs the whole e2e suite in containers (also
 
 GitHub Actions ([test.yaml](.github/workflows/test.yaml)) runs lint and format checks, the API tests and the e2e tests split into 4 shards. Traces and the HTML report of failed e2e runs are uploaded as workflow artifacts.
 
+## How to run API tests
+
+1. Switch to backend folder and start test setup with command `npm run test-setup`.
+
+2. Run tests in the Playwright UI with `npm run test:local` or headless with `npm run test:headless`. A single test file is run with `npm run test:local -- tests/api/<file_name>.test.js`. To run a single test, add `-t "test name"`.
+
+3. If you want to restore test setup and the database to their initial stage, just run `npm run test-setup` again.
+
+4. When you are done, you can remove containers and all related resources with command `npm run test-setup:down`
+
 ## How to manually inspect database
 
 Development setup includes database management tool called Adminer. With Adminer, you can easily inspect and modify database by using your browser. When development containers are running, navigate to [http://localhost:8083/](http://localhost:8083/) and sign in with following info:
