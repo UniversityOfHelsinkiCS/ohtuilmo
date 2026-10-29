@@ -131,7 +131,6 @@ const logger = (request, response, next) => {
   console.log('Path:  ', request.path)
   // bodies contain personal data, e.g. reviews and registrations
   if (isDevelopmentEnvironment()) console.log('Body:  ', request.body)
-  console.log('---')
   next()
 }
 
