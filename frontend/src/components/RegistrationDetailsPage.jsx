@@ -28,6 +28,7 @@ import SortableTopicList from './SortableTopicList'
 import { formatDate, extractCallingName } from '../utils/functions'
 
 import './RegistrationDetailsPage.css'
+import Markdown from 'react-markdown'
 
 class PeerReviewInfo extends React.Component {
   constructor(props) {
@@ -88,17 +89,16 @@ const ResearchConsent = ({ student }) => {
   return (
     <div>
       <Typography variant="h2">Tutkimuslupa</Typography>
-      <Typography style={{ width: '60%' }}>
+      <Markdown>
         Teemme Helsingin yliopistossa tutkimusta generatiivisen tekoälyn käytöstä opintojen aikana.
         Tällä kurssilla vertaisarvioinneissa ja tuntikirjanpidossa (timelogs) tullaan esittämään
-        kysymyksiä generatiivisen tekoälyn käytöstä osana ohjelmistoprojektia. Näihin kysymyksiin
-        annettuja vastauksia voidaan hyödyntää kurssin kehityksen lisäksi tutkimuksessa. Osana
+        kysymyksiä generatiivisen tekoälyn käytöstä osana ohjelmistoprojektia. Näihin **kysymyksiin
+        annettuja vastauksia voidaan hyödyntää kurssin kehityksen lisäksi tutkimuksessa.** Osana
         aineiston analyysiä vastauksesi kysymyksiin voidaan yhdistää arvosana- ja
-        kurssisuoritustietoihisi, mutta sinua tai ryhmääsi ei voida tunnistaa julkaistusta
-        tutkimuksesta. Lisätietoja voi kysyä Matti Luukkaiselta (vastuuopettaja) tai Outi
+        kurssisuoritustietoihisi, mutta **sinua tai ryhmääsi ei voida tunnistaa julkaistusta
+        tutkimuksesta**. Lisätietoja voi kysyä Matti Luukkaiselta (vastuuopettaja) tai Outi
         Savolaiselta (opettaja).
-      </Typography>
-      <br />
+      </Markdown>
       <Typography style={{ width: '60%', fontWeight: 'bold' }}>
         Tutkimukseen osallistuminen tai siitä kieltäytyminen ei vaikuta kohteluusi kurssilla.
       </Typography>
@@ -288,19 +288,22 @@ class RegistrationDetailsPage extends React.Component {
     const { student, preferred_topics, questions, createdAt } = registration
 
     return (
-      <div className="registration-details-container">
-        <Typography variant="h4" gutterBottom>
-          Registration details
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Registration date: {formatDate(createdAt)}
-        </Typography>
-        <CourseMaterial />
-        <UserDetails student={student} />
-        <ResearchConsent student={user} />
-        <PreferredTopics topics={preferred_topics} />
-        <RegistrationAnswers questions={questions} />
-      </div>
+      <Container>
+        <div className="registration-details-container">
+          <Typography variant="h4" gutterBottom>
+            Registration details
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Registration date: {formatDate(createdAt)}
+          </Typography>
+          <CourseMaterial />
+          <GroupDetails groupDetails={groupDetails} />
+          <UserDetails student={student} />
+          <ResearchConsent student={user} />
+          <PreferredTopics topics={preferred_topics} />
+          <RegistrationAnswers questions={questions} />
+        </div>
+      </Container>
     )
   }
 }
