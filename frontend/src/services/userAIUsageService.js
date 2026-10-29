@@ -52,9 +52,9 @@ const postAIUsageAnswers = async (aiUsageEntry) => {
   }
 }
 
-const putAIUsageAnswers = async (aiUsageEntry, id) => {
+const putAIUsageAnswers = async (aiUsageEntry) => {
   try {
-    const response = await axios.put(`${aiUsageUrl}/${id}`, aiUsageEntry, {
+    const response = await axios.put(`${aiUsageUrl}`, aiUsageEntry, {
       headers: { Authorization: `Bearer ${getUserToken()}` },
     })
     return response.data

@@ -121,7 +121,7 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
   const user = req.user
   let configurations = {}
   if (!user.instructor && !user.admin) {
-    return res.status('403').json({ error: 'Forbidden' })
+    return res.status(403).json({ error: 'Forbidden' })
   }
   if (user.instructor) {
     const groups = await db.Group.findAll({
@@ -180,7 +180,7 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
 })
 
 userAIUsageRouter.get('/answers', checkAdmin, async (_req, res) => {
-  // bring all answers of students
+  // TODO: bring all answers of students
   return res.status(404).json({ error: 'Not found' })
 })
 
@@ -245,8 +245,7 @@ userAIUsageRouter.post('/', checkLogin, async (req, res) => {
   }
 })
 
-userAIUsageRouter.put('/:id', checkLogin, async (req, res) => {
-  const id = req.params.id
+userAIUsageRouter.put('/', checkLogin, async (req, res) => {
   const user = req.user
   const { sprint, modelsUsed, howUsed, groupId } = req.body
   const validated = validateInput(modelsUsed, howUsed, sprint, groupId)
@@ -254,10 +253,7 @@ userAIUsageRouter.put('/:id', checkLogin, async (req, res) => {
   if (!validated) {
     return res.status(400).json({ error: 'Data malformatted' })
   }
-  // type of id is string
-  if (sprint.toString() !== id) {
-    return res.status(400).json({ error: 'Sprint id mismatch.' })
-  }
+
   try {
     const studentOfGroup = await db.Group.findOne({
       where: { id: groupId },

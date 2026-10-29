@@ -159,7 +159,7 @@ export const UserAIUsageForm = ({ currentSprintId, groupId }) => {
     }
     const currentSprintData = sprintData?.filter((usage) => usage.sprintId === currentSprintId)[0]
     if (currentSprintData?.sprintId === currentSprintId) {
-      dispatch(updateAIUsageAnswers(dataObject, currentSprintId))
+      dispatch(updateAIUsageAnswers(dataObject))
     } else {
       dispatch(createAIUsageAnswers(dataObject))
     }

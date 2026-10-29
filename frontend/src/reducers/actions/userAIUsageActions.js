@@ -15,9 +15,9 @@ export const createAIUsageAnswers = (aiUsageEntry) => {
   }
 }
 
-export const updateAIUsageAnswers = (aiUsageEntry, id) => {
+export const updateAIUsageAnswers = (aiUsageEntry) => {
   return async (dispatch) => {
-    const updatedSprintAIUsage = await userAIUsageService.putAIUsageAnswers(aiUsageEntry, id)
+    const updatedSprintAIUsage = await userAIUsageService.putAIUsageAnswers(aiUsageEntry)
     if (updatedSprintAIUsage.error) {
       dispatch(setError(`Error updating student AI usage answers: ${sprintAIUsage.error}`, 5000))
     } else {
