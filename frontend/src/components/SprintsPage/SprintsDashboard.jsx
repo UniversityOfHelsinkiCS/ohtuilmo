@@ -72,7 +72,7 @@ const SprintsPage = (props) => {
   if (!group) return <NotInGroupPlaceholder />
 
   return (
-    <Container>
+    <Container className="sprints-container">
       <Typography variant="h4">Add new sprint</Typography>
       <div className="spacer"></div>
       <div className="add-sprint-container">

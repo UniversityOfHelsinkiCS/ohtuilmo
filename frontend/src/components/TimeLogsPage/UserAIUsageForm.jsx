@@ -170,9 +170,7 @@ export const UserAIUsageForm = ({ currentSprintId, groupId }) => {
   return (
     <>
       <Typography variant="h5">Sprintin aikainen tekoälyn käyttö</Typography>
-      <Markdown>
-        **Voit päivittää vastauksiasi koko sprintin ajan. Muista tallettaa valintasi.**
-      </Markdown>
+      <Markdown>**Voit päivittää vastauksiasi koko sprintin ajan.**</Markdown>
       <Typography variant="h6">{questionInfos['what']}</Typography>
       <Table>
         <TableHead>
