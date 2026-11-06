@@ -123,7 +123,8 @@ userAIUsageRouter.get('/teacher', checkLogin, async (req, res) => {
   if (!user.instructor && !user.admin) {
     return res.status(403).json({ error: 'Forbidden' })
   }
-  if (user.instructor) {
+
+  if (user.instructor && !user.admin) {
     const groups = await db.Group.findAll({
       attributes: ['id'],
       where: { instructorId: user.id },
