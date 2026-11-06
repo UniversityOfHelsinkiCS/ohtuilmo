@@ -1,16 +1,16 @@
 import { test, expect } from '../test'
-import { createGroup, deleteAllGroups, loginAsRegisteredUser, selectDate } from '../helpers'
+import { createGroup, deleteAllGroups, loginAsRegisteredUser } from '../helpers'
 
 const addWeeksToDate = (date, weeks) => {
   const newDate = new Date(date)
   newDate.setDate(newDate.getDate() + weeks * 7)
-  return newDate
+  return newDate.toLocaleDateString('en-CH')
 }
 
 const addDaysToDate = (date, days) => {
   const newDate = new Date(date)
   newDate.setDate(newDate.getDate() + days)
-  return newDate
+  return newDate.toLocaleDateString('en-CH')
 }
 
 const withRequest = async (playwright, fn) => {
@@ -79,16 +79,61 @@ test.describe('Time logs & sprints', () => {
 
     const dateToday = new Date()
     const dateYesterday = addDaysToDate(dateToday, -1)
+    const dateTodayString = dateToday.toLocaleDateString('en-CH')
 
     await page.locator('#sprintNumber').fill('1')
-    await selectDate(page, page.locator('#startDate'), addWeeksToDate(dateYesterday, -1))
-    await selectDate(page, page.locator('#endDate'), dateYesterday)
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Day"]')
+      .fill(addWeeksToDate(dateYesterday, -1).split('.')[0])
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Month"]')
+      .fill(addWeeksToDate(dateYesterday, -1).split('.')[1])
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Year"]')
+      .fill(addWeeksToDate(dateYesterday, -1).split('.')[2])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Day"]')
+      .fill(dateYesterday.split('.')[0])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Month"]')
+      .fill(dateYesterday.split('.')[1])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Year"]')
+      .fill(dateYesterday.split('.')[2])
     await page.locator('#add-sprint-button').click()
     await expect(page.locator('[data-cy=sprint-1]')).toBeAttached()
 
     await page.locator('#sprintNumber').fill('2')
-    await selectDate(page, page.locator('#startDate'), dateToday)
-    await selectDate(page, page.locator('#endDate'), addWeeksToDate(dateToday, 1))
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Day"]')
+      .fill(dateTodayString.split('.')[0])
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Month"]')
+      .fill(dateTodayString.split('.')[1])
+    await page
+      .getByRole('group', { name: 'Start Date' })
+      .locator('[aria-label="Year"]')
+      .fill(dateTodayString.split('.')[2])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Day"]')
+      .fill(addWeeksToDate(dateToday, 1).split('.')[0])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Month"]')
+      .fill(addWeeksToDate(dateToday, 1).split('.')[1])
+    await page
+      .getByRole('group', { name: 'End Date' })
+      .locator('[aria-label="Year"]')
+      .fill(addWeeksToDate(dateToday, 1).split('.')[2])
     await page.locator('#add-sprint-button').click()
 
     await expect(page.locator('[data-cy=sprint-2]')).toBeAttached()
@@ -112,15 +157,38 @@ test.describe('Time logs & sprints', () => {
 
   test('add 2 time logs', async ({ page }) => {
     await openTimeLogs(page)
-
-    await selectDate(page, page.locator('#date'), new Date())
+    const todaysDate = new Date()
+    const dateTodayString = todaysDate.toLocaleDateString('en-CH')
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Day"]')
+      .fill(dateTodayString.split('.')[0])
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Month"]')
+      .fill(dateTodayString.split('.')[1])
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Year"]')
+      .fill(dateTodayString.split('.')[2])
     await page.locator('#time').fill('01:00')
     await page.locator('#description').fill('test description 1')
     await page.locator('#time-log-submit-button').click()
 
     await expect(page.locator('.notification')).toHaveText('Time log created successfully')
 
-    await selectDate(page, page.locator('#date'), addDaysToDate(new Date(), 1))
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Day"]')
+      .fill(addDaysToDate(todaysDate, 1).split('.')[0])
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Month"]')
+      .fill(addDaysToDate(todaysDate, 1).split('.')[1])
+    await page
+      .getByRole('group', { name: 'Date' })
+      .locator('[aria-label="Year"]')
+      .fill(addDaysToDate(todaysDate, 1).split('.')[2])
     await page.locator('#time').fill('02:00')
     await page.locator('#description').fill('test description 2')
     await page.locator('#time-log-submit-button').click()
@@ -148,7 +216,9 @@ test.describe('Time logs & sprints', () => {
     page,
   }) => {
     await openTimeLogsByUrl(page)
-    await selectDate(page, page.locator('.date input').first(), '2022-02-01')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Day"]').fill('01')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Month"]').fill('02')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Year"]').fill('2022')
     await page.locator('#time').fill('01:00')
     await page.locator('#description').fill('valid description')
     await page.locator('.submit-button').click()
@@ -216,7 +286,9 @@ test.describe('Time logs & sprints', () => {
   for (const [name, time, description, error] of invalidInputs) {
     test(`displays error on time field of form when ${name}`, async ({ page }) => {
       await openTimeLogsByUrl(page)
-      await selectDate(page, page.locator('.date input').first(), '2022-01-01')
+      await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Day"]').fill('01')
+      await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Month"]').fill('02')
+      await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Year"]').fill('2022')
       await page.locator('#time').fill(time)
       await page.locator('#description').fill(description)
       await page.locator('.submit-button').click()
@@ -230,7 +302,10 @@ test.describe('Time logs & sprints', () => {
     page,
   }) => {
     await openTimeLogsByUrl(page)
-    await selectDate(page, page.locator('.date input').first(), '2022-01-01')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Day"]').fill('01')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Month"]').fill('02')
+    await page.getByRole('group', { name: 'Date' }).locator('[aria-label="Year"]').fill('2022')
+
     await page.locator('#time').fill('01:00')
     await page.locator('#description').fill('1234')
     await page.locator('.submit-button').click()
