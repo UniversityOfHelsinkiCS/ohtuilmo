@@ -3,7 +3,14 @@ const request = require('supertest')
 
 const { app, server, db } = require('../../index')
 const { loginAs } = require('../utils/login')
-const { student, admin, otherStudent, createUsers, createGroup } = require('../utils/fixtures')
+const {
+  student,
+  admin,
+  instructor,
+  otherStudent,
+  createUsers,
+  createGroup,
+} = require('../utils/fixtures')
 
 const day = 24 * 60 * 60 * 1000
 
@@ -43,11 +50,12 @@ const initialHowUsed = {
   databases: 'none',
   infra: 'none',
 }
-const createAIUsage = async (groupId, sprint, data, type = '') => {
-  const login =
-    type === 'other'
-      ? await loginAs(app, otherStudent.student_number)
-      : await loginAs(app, student.student_number)
+const createAIUsage = async (groupId, sprint, data, role = '') => {
+  let login
+  if (role === 'student') login = await loginAs(app, student.student_number)
+  if (role === 'otherStudent') login = await loginAs(app, otherStudent.student_number)
+  if (role === 'instructor') login = await loginAs(app, instructor.student_number)
+  if (role === 'admin') login = await loginAs(app, admin.student_number)
   return request(app).post('/api/aiusage').set('Authorization', `bearer ${login.token}`).send({
     groupId,
     sprint,
@@ -66,19 +74,19 @@ const updateAIUsage = async (groupId, sprint, data) => {
 }
 
 const getAIUsage = async (role) => {
-  const login =
-    role === 'student'
-      ? await loginAs(app, student.student_number)
-      : await loginAs(app, admin.student_number)
-  console.log(role, login.user)
-  return request(app).get(`/api/aiusage/${role}`).set('Authorization', `bearer ${login.token}`)
+  let login
+  if (role === 'student') login = await loginAs(app, student.student_number)
+  if (role === 'instructor') login = await loginAs(app, instructor.student_number)
+  if (role === 'admin') login = await loginAs(app, admin.student_number)
+  const path = role === 'student' ? 'student' : 'teacher'
+  return request(app).get(`/api/aiusage/${path}`).set('Authorization', `bearer ${login.token}`)
 }
 
 describe('Users AI usage', () => {
   beforeEach(async () => {
     await db.sequelize.truncate({ cascade: true, restartIdentity: true })
     await createUsers(db)
-    ownGroup = await createGroup(db, [student.student_number])
+    ownGroup = await createGroup(db, [student.student_number], instructor.student_number)
     otherGroup = await createGroup(db, [otherStudent.student_number], admin.student_number)
     ownSprint = await createSprint(ownGroup)
     otherSprint = await createSprint(otherGroup)
@@ -88,7 +96,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    const res = await createAIUsage(ownGroup.id, ownSprint.id, data)
+    const res = await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
 
     expect(res.statusCode).toEqual(201)
     expect(await db.UserAIUsage.count()).toEqual(1)
@@ -99,7 +107,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    const res = await createAIUsage(ownGroup.id, otherSprint.id, data)
+    const res = await createAIUsage(ownGroup.id, otherSprint.id, data, 'student')
 
     expect(res.statusCode).toEqual(404)
     expect(res._body.error).toEqual('Sprint not found.')
@@ -111,7 +119,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    const res = await createAIUsage(otherGroup.id, otherSprint.id, data)
+    const res = await createAIUsage(otherGroup.id, otherSprint.id, data, 'student')
 
     expect(res.statusCode).toEqual(403)
     expect(res._body.error).toEqual('Forbidden, not a member of the group')
@@ -123,7 +131,7 @@ describe('Users AI usage', () => {
       howUsed: { ...initialHowUsed, databases: 'jippii' },
       modelsUsed: initialModelsUsed,
     }
-    const res = await createAIUsage(ownGroup.id, ownSprint.id, data)
+    const res = await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
 
     expect(res.statusCode).toEqual(400)
     expect(res._body.error).toEqual('Data malformatted')
@@ -135,7 +143,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    await createAIUsage(ownGroup.id, ownSprint.id, data)
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
 
     data.modelsUsed = {
       claude: true,
@@ -158,7 +166,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    await createAIUsage(ownGroup.id, ownSprint.id, data)
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
 
     const res = await updateAIUsage(ownGroup.id, otherSprint.id, data)
 
@@ -171,7 +179,7 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    await createAIUsage(ownGroup.id, ownSprint.id, data)
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
 
     const res = await updateAIUsage(otherGroup.id, ownSprint.id, data)
 
@@ -184,25 +192,36 @@ describe('Users AI usage', () => {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    await createAIUsage(ownGroup.id, ownSprint.id, data)
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
     const res = await getAIUsage('student')
 
     expect(res.statusCode).toEqual(200)
     expect(res._body.length).toEqual(1)
     expect(res._body[0].studentNumber).toEqual('111111111')
   })
-  //TODO: this also for instructor
 
   test('teachers gets own groups` data', async () => {
     let data = {
       howUsed: initialHowUsed,
       modelsUsed: initialModelsUsed,
     }
-    await createAIUsage(ownGroup.id, ownSprint.id, data)
-    await createAIUsage(otherGroup.id, otherSprint.id, data, 'other')
-    const res = await getAIUsage('teacher')
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
+    await createAIUsage(otherGroup.id, otherSprint.id, data, 'otherStudent')
+    const res = await getAIUsage('instructor')
     expect(res.statusCode).toEqual(200)
     expect(res._body.length).toEqual(1)
+  })
+
+  test('teachers gets own groups` data', async () => {
+    let data = {
+      howUsed: initialHowUsed,
+      modelsUsed: initialModelsUsed,
+    }
+    await createAIUsage(ownGroup.id, ownSprint.id, data, 'student')
+    await createAIUsage(otherGroup.id, otherSprint.id, data, 'otherStudent')
+    const res = await getAIUsage('admin')
+    expect(res.statusCode).toEqual(200)
+    expect(res._body.length).toEqual(2)
   })
 })
 
