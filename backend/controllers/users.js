@@ -81,6 +81,7 @@ usersRouter.get('/', checkInstructor, async (req, res) => {
           .map((user) => user.dataValues.student_number)
 
         users = await db.User.findAll({
+          attributes: ['student_number', 'first_names', 'last_name'],
           where: {
             student_number: {
               [Op.in]: studentNumberList,
