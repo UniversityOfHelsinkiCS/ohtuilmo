@@ -14,7 +14,7 @@
 **/.DS_Store
 GEMINI.md
 AGENTS.md
-
+.claude/settings.local.json
 
 # do not include any data by default (except json)
 *.csv
